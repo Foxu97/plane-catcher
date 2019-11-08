@@ -1,0 +1,41 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "version": "1.0.0",
+        "title": "Plane catcher",
+        "description": "Plane catcher API",
+        "license": {
+            "name": "MIT"
+        }
+    },
+    "paths": {
+        "/plane": {
+            "get": {
+                "summary": "Get all planes in specific range",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "latitude",
+                        "type": "float",
+                        "description": "User's latitude",
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "longitude",
+                        "type": "float",
+                        "description": "User's longitude",
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "range",
+                        "type": "int",
+                        "description": "Range in km",
+                        "required": true
+                    }
+                ]
+            }
+        }
+    } 
+}
