@@ -4,17 +4,17 @@
 //for developing only 
 
 const orzeszeCoords = {
-    latitude: 50.143212,
-    longitude: 18.775662,
+    latitude: 50.141973,
+    longitude: 18.776457,
     altitude: 0
 }
 
 const pyrzowiceCoords = {
-    latitude: 50.475926,
-    longitude: 19.073234,
-    altitude: 4343
+    latitude: 50.476052,
+    longitude: 19.084780,
+    altitude: 11000
 }
-
+//end of for developing only 
 
 var rad = function (x: number) {
     return x * Math.PI / 180;
@@ -55,70 +55,33 @@ function calcBearing(userCoords: Coordinates, planeCoords: Coordinates){
     brng = toDegrees(brng);
     return (brng + 360) % 360;
 }
-function calcAngleBetweenToVectors(v1: {latitude: number, longitude: number, altitude: number}, v2: {latitude: number, longitude: number, altitude: number}){
-    console.log(v1)
-    console.log(v2)
-    let ab = v1.latitude * v2.latitude + v1.longitude + v2.longitude + v1.altitude * v2.altitude;
-    let THE_ABSOLUTE_VALUE_a = Math.sqrt(v1.latitude * v1.latitude + v1.longitude * v1.longitude + v1.altitude * v1.altitude);
-    let THE_ABSOLUTE_VALUE_b = Math.sqrt(v2.latitude * v2.latitude + v2.longitude * v2.longitude + v2.altitude * v2.altitude);
 
-    const angle = Math.acos(ab/ (THE_ABSOLUTE_VALUE_a * THE_ABSOLUTE_VALUE_b));
-    return angle;
-}
-
-const samplePlanes = [
-    {
-        latitude: 38.89,
-        longitude: -77.032,
-        altitudeInMeters: 11000
-    }
-]
 // IT WILL BE SPLITTED INTO OTHER FILES
 
 
-exports.getAllPlanesInRange = (req: any, res: any, next: any) => { //expect to get userCoordinates in query string
+exports.getAllPlanesInRange = (req: any, res: any, next: any) => {
     const userLatitude = req.query.latitude;
     const userLongitude = req.query.longitude;
-    const range = req.query.range
-
+    const range = req.query.range;
     if (!req.query.latitude || !req.query.longitude || !req.query.range){
         return res.status(400).send("Invalid query parameters")
     }
     
-    // const userCoords: Coordinates = {
-    //     longitude: userLongitude,
-    //     latitude: userLatitude
-    // }
-
-    // const planeCoords: Coordinates = {
-    //     longitude: samplePlanes[0].longitude,
-    //     latitude: samplePlanes[0].latitude
-    // }
+    //zlapac wszystkie samoloty w obrebie range
 
     const userCoords: Coordinates = {
-        longitude: orzeszeCoords.longitude,
-        latitude: orzeszeCoords.latitude
+        longitude: req.query.longitude,
+        latitude: req.query.latitude
     }
 
     const planeCoords: Coordinates = {
         longitude: pyrzowiceCoords.longitude,
         latitude: pyrzowiceCoords.latitude
     }
-    let distanceInMeters = getDistance(userCoords, planeCoords);
-    let bearing = calcBearing(userCoords, planeCoords);
-    console.log(samplePlanes[0].altitudeInMeters / distanceInMeters)
-    // metry na radiany trzeba jakos zamienic samplePlanes[0].altitudeInMeters / distanceInMeters
-    let angle2 = Math.tan(4000 / 10000) 
-    let angle = calcAngleBetweenToVectors({latitude: orzeszeCoords.latitude, longitude: orzeszeCoords.longitude, altitude: 0}, {latitude: pyrzowiceCoords.latitude, longitude: pyrzowiceCoords.longitude, altitude: 4343})
-     //angle = toDegrees(angle) // cos maly ten kat wychodzi
+    const distanceInMeters = getDistance(userCoords, planeCoords);
+    const bearing = calcBearing(userCoords, planeCoords);
+    const angle = toDegrees(Math.atan(pyrzowiceCoords.altitude / distanceInMeters));
 
-    console.log("Bearing " + bearing + " degrees")
-    console.log("Distance: " + distanceInMeters / 1000 +" km")
 
-    console.log("Angle " + toDegrees(angle) + " degrees")
-    console.log("Angle " + angle)
-
-    console.log("Angle tan " + toDegrees(angle2)) //to wydaje sie byc dobrze ale trzeba sprawdzic
-
-    res.send("All planes")
+    res.json({distanceInMeters: distanceInMeters, bearingInDegrees: bearing, angleBetweenPlaneAndObserverInDegrees: angle});
 }
