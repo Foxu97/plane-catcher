@@ -7,6 +7,9 @@ const dotenv = require('dotenv').config();
 const dbConfig = require('./config/dbConfig');
 
 const planeRoutes = require('./routes/plane');
+const userRoutes = require('./routes/user');
+
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -26,8 +29,8 @@ var swaggerUi = require('swagger-ui-express'),
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use('/api/v1', router);
 
-
-app.use('/plane', planeRoutes)
+app.use('/user', userRoutes);
+app.use('/plane', planeRoutes);
 
 
 mongoose.connect(
