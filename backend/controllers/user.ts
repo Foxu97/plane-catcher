@@ -1,9 +1,12 @@
+import UserModel from '../models/User';
+
 const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken");
 const { validationResult } = require('express-validator/check');
-const User = require('../models/user');
+const User = require('../dbModels/user');
 
-exports.register= (req: any, res: any, next: any) => {
+
+exports.register = (req: any, res: any, next: any) => {
     const errors: any = validationResult(req);
     if(!errors.isEmpty()){
         const error = new Error('Validation failded.');
@@ -35,3 +38,40 @@ exports.register= (req: any, res: any, next: any) => {
         next(err)
     });
 };
+
+exports.login = (req: any, res: any, next: any) => {
+    let fetchedUser: UserModel
+    User.findOne({ email: req.body.email })
+    .then((user: UserModel) => {
+        if(!user){
+            return res.status(401).json({
+                message: "No user found, Auth failed"
+            });
+        }
+        fetchedUser = user;
+        return bcrypt.compare(req.body.password, user.password)
+    })
+    .then((result: any) => { 
+        if(!result) {
+            return res.status(401).json({
+                message: "Auth failed"
+            });
+        }
+        const token = jwt.sign(
+            { email: fetchedUser.email, userId: fetchedUser._id },
+             process.env.JWT_SECRET,
+              { expiresIn: "1h" }
+            );
+            res.status(200).json({
+                token: token,
+                expiresIn: 3600
+            });
+
+    })
+    .catch((err: any )=> {
+        console.log(err)
+        return res.status(401).json({
+            message: "Auth failed"
+        });
+    });
+}

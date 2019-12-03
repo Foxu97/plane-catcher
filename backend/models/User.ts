@@ -1,16 +1,10 @@
-const moongose = require('mongoose');
-const Schema = moongose.Schema;
-
-const userSchema = new Schema({
-    email: {
-        type: String,
-        unique: true,
-        required: true,
-    },
-    password: {
-        type: String,
-        required: true,
+class User {
+    _id: String
+    email: String
+    password: String
+    constructor(email: String, password: String){
+        this.email = email,
+        this.password = password
     }
-});
-
-module.exports = moongose.model('User', userSchema);
+}
+export default User;
