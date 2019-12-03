@@ -83,5 +83,5 @@ exports.getAllPlanesInRange = (req: any, res: any, next: any) => {
     const angle = toDegrees(Math.atan(pyrzowiceCoords.altitude / distanceInMeters));
 
 
-    res.json({distanceInMeters: distanceInMeters, bearingInDegrees: bearing, angleBetweenPlaneAndObserverInDegrees: angle});
+    res.status(200).json({distanceInMeters: distanceInMeters, bearingInDegrees: bearing, angleBetweenPlaneAndObserverInDegrees: angle});
 }

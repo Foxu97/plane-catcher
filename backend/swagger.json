@@ -11,30 +11,58 @@
     "paths": {
         "/plane": {
             "get": {
-                "summary": "Get all planes in specific range",
+                "summary": "Get location info (distance, bearing, angle) of all planes in range.",
+                "description": "Returns array of objects with contain distance, bearing and angle of every plane in range.",
                 "parameters": [
                     {
-                        "in": "path",
+                        "in": "query",
                         "name": "latitude",
-                        "type": "float",
+                        "type": "number",
                         "description": "User's latitude",
-                        "required": true
+                        "required": true,
+                        "default": 50.505050
                     },
                     {
-                        "in": "path",
+                        "in": "query",
                         "name": "longitude",
-                        "type": "float",
+                        "type": "number",
                         "description": "User's longitude",
-                        "required": true
+                        "required": true,
+                        "default": 50.505050
                     },
                     {
-                        "in": "path",
+                        "in": "query",
                         "name": "range",
-                        "type": "int",
+                        "type": "number",
                         "description": "Range in km",
-                        "required": true
+                        "required": true,
+                        "default": 50
                     }
-                ]
+                ],
+                "responses": {
+                    "200": {
+                      "schema": {
+                        "type": "object",
+                        "properties": {
+                            "distanceInMeters": {
+                              "type": "number",
+                              "format": "float"
+                            },
+                            "bearingInDegrees": {
+                                "type": "number",
+                                "format": "float"
+                              },
+                              "angleBetweenPlaneAndObserverInDegrees": {
+                                "type": "number",
+                                "format": "float"
+                              }
+                        }
+                      }
+                    },
+                    "400": {
+                      "description": "Invalid query parameters"
+                    }
+                  }
             }
         }
     } 

@@ -26,9 +26,6 @@ var swaggerUi = require('swagger-ui-express'),
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use('/api/v1', router);
 
-app.use('/main', (req, res) => {
-  res.send('Hello World!');
-})
 
 app.use('/plane', planeRoutes)
 
