@@ -9,8 +9,8 @@ import SignUpScreen from '../screens/SignUpScreen';
 import Colors from '../constants/Colors';
 
 const AppNavigator = createStackNavigator({
-    Map: MapScreen
-    // AR: ARScreen,
+    Map: MapScreen,
+    AR: ARScreen
     // SignIn: SignInScreen,
     // SignUp: SignUpScreen
 }, {
