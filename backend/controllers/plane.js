@@ -16,11 +16,10 @@ const pyrzowiceCoords = {
 }
 //end of for developing only 
 
-var rad = function (x: number) {
+var rad = function (x) {
     return x * Math.PI / 180;
 };
-import { Coordinates } from '../models/Coordinates'
-function getDistance(p1: Coordinates, p2: Coordinates) {
+function getDistance(p1, p2) {
     var R = 6378137; // Earth’s mean radius in meter
     var dLat = rad(p2.latitude - p1.latitude);
     var dLong = rad(p2.longitude - p1.longitude);
@@ -33,16 +32,16 @@ function getDistance(p1: Coordinates, p2: Coordinates) {
 };
 
 // Converts from degrees to radians.
-function toRadians(degrees: number) {
+function toRadians(degrees) {
     return degrees * Math.PI / 180;
   };
    
   // Converts from radians to degrees.
-  function toDegrees(radians: number) {
+  function toDegrees(radians) {
     return radians * 180 / Math.PI;
   }
 
-function calcBearing(userCoords: Coordinates, planeCoords: Coordinates){
+function calcBearing(userCoords, planeCoords){
     const startLat = toRadians(userCoords.latitude);
     const startLng = toRadians(userCoords.longitude);
     const destLat = toRadians(planeCoords.latitude);
@@ -59,7 +58,7 @@ function calcBearing(userCoords: Coordinates, planeCoords: Coordinates){
 // IT WILL BE SPLITTED INTO OTHER FILES
 
 
-exports.getAllPlanesInRange = (req: any, res: any, next: any) => {
+exports.getAllPlanesInRange = (req, res, next) => {
     const userLatitude = req.query.latitude;
     const userLongitude = req.query.longitude;
     const range = req.query.range;
@@ -69,12 +68,12 @@ exports.getAllPlanesInRange = (req: any, res: any, next: any) => {
     
     //zlapac wszystkie samoloty w obrebie range
 
-    const userCoords: Coordinates = {
+    const userCoords = {
         longitude: req.query.longitude,
         latitude: req.query.latitude
     }
 
-    const planeCoords: Coordinates = {
+    const planeCoords = {
         longitude: pyrzowiceCoords.longitude,
         latitude: pyrzowiceCoords.latitude
     }

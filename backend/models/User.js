@@ -1,5 +1,6 @@
-const moongose = require('mongoose');
-const Schema = moongose.Schema;
+const mongoose = require('mongoose');
+delete mongoose.connection.models['User']; //error fix
+const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
     email: {
@@ -13,4 +14,4 @@ const userSchema = new Schema({
     }
 });
 
-module.exports = moongose.model('User', userSchema);
+module.exports = mongoose.model('User', userSchema);

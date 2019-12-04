@@ -1,13 +1,11 @@
-import UserModel from '../models/User';
-
 const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken");
 const { validationResult } = require('express-validator/check');
-const User = require('../dbModels/user');
+const User = require('../models/User.js')
 
 
-exports.register = (req: any, res: any, next: any) => {
-    const errors: any = validationResult(req);
+exports.register = (req, res, next) => {
+    const errors = validationResult(req);
     if(!errors.isEmpty()){
         const error = new Error('Validation failded.');
         error.statusCode = 400;
@@ -15,22 +13,22 @@ exports.register = (req: any, res: any, next: any) => {
         res.status(422).json({ message: "Something went wrong", error: error });
         // throw error;
     }
-    const email: String = req.body.email;
-    const password: String = req.body.password;
+    const email = req.body.email;
+    const password = req.body.password;
 
     bcrypt
     .hash(password, 12)
-    .then((hashedPassword: String) => {
+    .then((hashedPassword) => {
         const user = new User({
             email: email,
             password: hashedPassword
         });
         return user.save();
     })
-    .then((result: any) => {
+    .then(result => {
         res.status(201).json({ message: "User created successfully." });
     })
-    .catch((err: any) => {
+    .catch(err => {
         if(!err.statusCode){
             err.statusCode = 500;
         }
@@ -39,10 +37,10 @@ exports.register = (req: any, res: any, next: any) => {
     });
 };
 
-exports.login = (req: any, res: any, next: any) => {
-    let fetchedUser: UserModel
+exports.login = (req, res, next) => {
+    let fetchedUser
     User.findOne({ email: req.body.email })
-    .then((user: UserModel) => {
+    .then(user => {
         if(!user){
             return res.status(401).json({
                 message: "No user found, Auth failed"
@@ -51,7 +49,7 @@ exports.login = (req: any, res: any, next: any) => {
         fetchedUser = user;
         return bcrypt.compare(req.body.password, user.password)
     })
-    .then((result: any) => { 
+    .then(result => { 
         if(!result) {
             return res.status(401).json({
                 message: "Auth failed"
@@ -68,7 +66,7 @@ exports.login = (req: any, res: any, next: any) => {
             });
 
     })
-    .catch((err: any )=> {
+    .catch(err=> {
         console.log(err)
         return res.status(401).json({
             message: "Auth failed"

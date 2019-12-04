@@ -1,5 +1,5 @@
-import express = require('express');
-const app: express.Application = express();
+const express = require('express');
+const app = express();
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const router = express.Router()
@@ -35,7 +35,7 @@ app.use('/plane', planeRoutes);
 
 mongoose.connect(
   dbConfig.url, dbConfig.options
-).then(( result:any ) => {
+).then( result => {
   app.listen(8080, "0.0.0.0");
   console.log("Listening server on port 8080");
-}).catch(( err:any ) => console.log(err));
+}).catch( err => console.log(err));

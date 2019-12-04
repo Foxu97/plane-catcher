@@ -1,4 +1,3 @@
-export {}; // fix for 'cannot redeclare block-scoped variable'
 const { body } = require('express-validator/check');
 const User = require('../models/user');
 
@@ -6,8 +5,8 @@ exports.registrationValidation = [
     body('email')
     .isEmail()
     .withMessage('Please enter a valid email.')
-    .custom((value: any) => {
-        return User.findOne({email: value}).then((userDoc: any) => {
+    .custom(value => {
+        return User.findOne({email: value}).then(userDoc => {
             if(userDoc){
                 return Promise.reject('E-Mail address already exists!');
             }
