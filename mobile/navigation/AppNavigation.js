@@ -69,6 +69,4 @@ const AppBottomTabNavigation = createMaterialBottomTabNavigator({
     
 });
 
-
-
 export default createAppContainer(AppBottomTabNavigation);
