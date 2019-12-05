@@ -100,7 +100,7 @@ MapScreen.navigationOptions = navData => {
         headerRight: <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
             <Item
                 title="Add Place"
-                iconName={Platform.OS === 'android' ? 'md-camera' : 'ios-add'}
+                iconName='md-camera'
                 onPress={() => {
                     navData.navigation.navigate('AR');
                 }}

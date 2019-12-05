@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import * as Permissions from 'expo-permissions';
+import Colors from '../constants/Colors';
 
 const ARScreen = props => {
     const [hasPermission, setHasPermission] = useState();
@@ -29,6 +30,16 @@ const ARScreen = props => {
         <Text>ARScreen</Text>
     )
 };
+
+ARScreen.navigationOptions = navData => {
+    return {
+        headerTitle: 'VR',
+        headerStyle: {
+            backgroundColor: Platform.OS === 'android' ? Colors.primary : ''
+        },
+        headerTintColor: Platform.OS === 'android' ? 'white' : Colors.primary
+    }
+}
 
 const styles = StyleSheet.create({
 
