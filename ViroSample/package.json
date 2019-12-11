@@ -9,6 +9,10 @@
   "dependencies": {
     "react": "16.8.3",
     "react-native": "0.59.3",
+    "react-native-compass-heading": "^1.0.0",
+    "react-native-geolocation-service": "^3.1.0",
+    "react-native-heading": "^1.1.1",
+    "react-native-simple-compass": "^1.0.0",
     "react-viro": "2.17.0"
   },
   "devDependencies": {

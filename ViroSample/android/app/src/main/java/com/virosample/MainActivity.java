@@ -1,6 +1,7 @@
 package com.virosample;
 
 import com.facebook.react.ReactActivity;
+import com.reactlibrary.RNSimpleCompassPackage;
 
 public class MainActivity extends ReactActivity {
 
