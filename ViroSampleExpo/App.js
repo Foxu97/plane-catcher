@@ -134,15 +134,15 @@ export default class HelloWorldSceneAR extends Component {
   }
   render() {
     return (<ViroARScene onTrackingUpdated={this._onInitialized}>   
-          <ViroText  text="female first hospital"  transformBehaviors={["billboard"]} scale={[0.2, 0.2, 0.2]}  position={[this.state.femalefirstX, 0, this.state.femalefirstZ]}  style={styles.helloWorldTextStyle} />
-           <ViroText text="apple hospital" scale={[4, 4, 4]} transformBehaviors={["billboard"]}  position={[this.state.appleX, 0, 2]} style={styles.helloWorldTextStyle} />
-           <ViroText text="civil hospital" scale={[4,4,4]} transformBehaviors={["billboard"]}  position={[this.state.civilX, 0, 2]} style={styles.helloWorldTextStyle} />
+          <ViroText  text="drzewo"  transformBehaviors={["billboard"]} scale={[0.2, 0.2, 0.2]}  position={[this.state.femalefirstX, 0, this.state.femalefirstZ]}  style={styles.helloWorldTextStyle} />
+           {/* <ViroText text="apple hospital" scale={[4, 4, 4]} transformBehaviors={["billboard"]}  position={[this.state.appleX, 0, 2]} style={styles.helloWorldTextStyle} />
+           <ViroText text="civil hospital" scale={[4,4,4]} transformBehaviors={["billboard"]}  position={[this.state.civilX, 0, 2]} style={styles.helloWorldTextStyle} /> */}
           {/* <ViroText text="subjail" scale={[3, 3, 3]} transformBehaviors={["billboard"]}  position={[this.state.subjailX, 0, this.state.subjailZ]} style={styles.helloWorldTextStyle} />
           <ViroText text="dhiraj sons" scale={[5, 5, 5]} transformBehaviors={["billboard"]}  position={[this.state.dhirajX, 0, this.state.dhirajZ]} style={styles.helloWorldTextStyle} /> */}
     </ViroARScene>);   
   }
    _onInitialized() {  
-      var femalefirst = this._transformPointToAR(50.141984,18.776532);
+      var femalefirst = this._transformPointToAR(50.141980,18.776708);
       var apple = this._transformPointToAR(18.776532, 50.141984);
       var civil=this._transformPointToAR(50.141903, 18.775983);
       var subjail=this._transformPointToAR(21.181359, 72.826964);

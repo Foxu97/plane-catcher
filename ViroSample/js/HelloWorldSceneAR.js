@@ -42,39 +42,11 @@ export default class HelloWorldSceneAR extends Component {
         });
       });
     }
+    console.log(status)
     return status;
-  // try {
-  //   const granted = await PermissionsAndroid.request(
-  //     PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-  //   )
-  //   this.setState({
-  //           latitude: 50.141967,
-  //           longitude: 18.776402,         
-  //           error: null
-  //         });
-  //   // if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-  //   //   //console.log("You can use the location")
-  //   //   //alert("You can use the location");
-  //   //   Geolocation.getCurrentPosition((Degree=this.state.Degree) => { //change to position if degree doesnt work
-  //   //     this.setState({
-  //   //       latitude: Degree.coords.latitude,
-  //   //       longitude: Degree.coords.longitude,         
-  //   //       error: null,
-  //   //       string: String(Degree.coords.latitude)
-  //   //     });
-  //   //   }, (error) => this.setState({error: error.message}),
-  //   //   { enableHighAccuracy: true}
-  //   //   )
-  //   // } else {
-  //   //   //console.log("location permission denied")
-  //   //   alert("Location permission denied");
-  //   // }
-  //   return granted;
-  // } 
-  // catch (err) {
-  //   console.warn(err)
-  // }
 }
+
+
   constructor() {
     super();
    this.requestLocationPermission=this.requestLocationPermission.bind(this);
@@ -110,6 +82,12 @@ export default class HelloWorldSceneAR extends Component {
   updateHead(){    
     AsyncStorage.setItem('headstart',JSON.stringify( this.state.headingAngle))
   }  
+
+  async getCamOrAs(){
+    let camOrientation = await ViroARScene.getCameraOrientationAsync();
+    console.log(camOrientation)
+  }
+
   componentDidMount() {    
    this.requestLocationPermission();   
     //ReactNativeHeading.start(1)
@@ -126,23 +104,48 @@ export default class HelloWorldSceneAR extends Component {
       }
       flag = 1
     });    
-    this.updateHead()
+    this.updateHead();
+    //////////////////////////////////
+    setInterval(() => {
+      async function getCamOrAs(){
+        try {
+          let camOrientation = await ViroARScene.getCameraOrientationAsync();
+          console.log(camOrientation)
+        } catch (err) {
+          console.log(err)
+        }
+      }
+      getCamOrAs();
+    }, 1500);
+    
   }
+
+    
+
+
+
+
+
+
+  
+
+
   componentWillUnmount() {    
     //ReactNativeHeading.stop();
   	DeviceEventEmitter.removeAllListeners('headingUpdated');
   }
   render() {
+    
     return (<ViroARScene onTrackingUpdated={this._onInitialized}>   
-          <ViroText  text="female first hospital"  transformBehaviors={["billboard"]} scale={[0.2, 0.2, 0.2]}  position={[this.state.femalefirstX, 0, this.state.femalefirstZ]}  style={styles.helloWorldTextStyle} />
-           <ViroText text="apple hospital" scale={[4, 4, 4]} transformBehaviors={["billboard"]}  position={[this.state.appleX, 0, 2]} style={styles.helloWorldTextStyle} />
-           <ViroText text="civil hospital" scale={[4,4,4]} transformBehaviors={["billboard"]}  position={[this.state.civilX, 0, 2]} style={styles.helloWorldTextStyle} />
+          <ViroText  text="Drzewo"  transformBehaviors={["billboard"]} scale={[0.2, 0.2, 0.2]}  position={[this.state.femalefirstX, 0, this.state.femalefirstZ]}  style={styles.helloWorldTextStyle} />
+           {/* <ViroText text="apple hospital" scale={[4, 4, 4]} transformBehaviors={["billboard"]}  position={[this.state.appleX, 0, 2]} style={styles.helloWorldTextStyle} />
+           <ViroText text="civil hospital" scale={[4,4,4]} transformBehaviors={["billboard"]}  position={[this.state.civilX, 0, 2]} style={styles.helloWorldTextStyle} /> */}
           {/* <ViroText text="subjail" scale={[3, 3, 3]} transformBehaviors={["billboard"]}  position={[this.state.subjailX, 0, this.state.subjailZ]} style={styles.helloWorldTextStyle} />
           <ViroText text="dhiraj sons" scale={[5, 5, 5]} transformBehaviors={["billboard"]}  position={[this.state.dhirajX, 0, this.state.dhirajZ]} style={styles.helloWorldTextStyle} /> */}
     </ViroARScene>);   
   }
    _onInitialized() {  
-      var femalefirst = this._transformPointToAR(50.141984,18.776532);
+      var femalefirst = this._transformPointToAR(50.141980,18.776708);
       var apple = this._transformPointToAR(18.776532, 50.141984);
       var civil=this._transformPointToAR(50.141903, 18.775983);
       var subjail=this._transformPointToAR(21.181359, 72.826964);
@@ -163,17 +166,23 @@ export default class HelloWorldSceneAR extends Component {
   }
 
   _getLocationAsync = async () => {
-    let { status } = await Permissions.askAsync(Permissions.LOCATION)
-    if (status !== 'granted') {
-      this.setState({
-        errorMessage: 'Permission to access location was denied'
-      })
-    } else {
-      Location.watchHeadingAsync(data => {
-        let heading = this._round(data.trueHeading)
-        this.setState({ heading })
-      })
+    try {
+      let { status } = await Permissions.askAsync(Permissions.LOCATION)
+      if (status !== 'granted') {
+        this.setState({
+          errorMessage: 'Permission to access location was denied'
+        })
+      } else {
+        Location.watchHeadingAsync(data => {
+          console.log(data)
+          let heading = this._round(data.trueHeading)
+          this.setState({ heading })
+        })
+      }
+    } catch (err) {
+      throw err
     }
+
   }
  _latLongToMerc(lat_deg, lon_deg) {
    var lon_rad = (lon_deg / 180.0 * Math.PI)
