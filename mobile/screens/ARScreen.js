@@ -1,48 +1,38 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Button, Platform } from 'react-native';
-import * as Permissions from 'expo-permissions';
-import Colors from '../constants/Colors';
+import React, { useState, useEffect } from 'react';
+import { Text, View, TouchableOpacity, StyleSheet } from 'react-native';
 
-const ARScreen = props => {
-    const [hasPermission, setHasPermission] = useState(false);
+import CameraComponent from '../components/CameraComponent';
 
-    const verifyPermissions = async () =>{
-        const result = await Permissions.askAsync(Permissions.CAMERA, Permissions.CAMERA_ROLL);
-        if (result.status !== 'granted') {
-            Alert.alert(
-                'Insufficient permissions!',
-                'You need to grant location permissions to use this app.',
-                [{ text: 'Okay' }]
-            );
-            setHasPermission(false);
-        } else {
-            setHasPermission(true);
-        }
-       
-    };
+const ARScreen = () => {
 
-    useEffect(() => {
-        verifyPermissions();
-    }, [])
-
-    return (
-        hasPermission ? <Text>Has Permission</Text> : <Button title="Grant permissions" onPress={verifyPermissions} />
-        
-    )
-};
-
-ARScreen.navigationOptions = navData => {
-    return {
-        headerTitle: 'VR',
-        headerStyle: {
-            backgroundColor: Platform.OS === 'android' ? Colors.primary : ''
-        },
-        headerTintColor: Platform.OS === 'android' ? 'white' : Colors.primary
-    }
+  return (
+    <View style={styles.screen}>
+      <CameraComponent style={styles.cameraOutput}/>
+      <View style={styles.planeInfo}>
+          <Text>Plane info</Text>
+      </View>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
+    screen: {
+        flex: 1
+    },
+    cameraOutput: {
+        flex: 4
+    },
 
+    planeInfo: {
+        flex: 1
+    }
 });
+
+ARScreen.navigationOptions = navData => {
+    return {
+        headerTitle: 'AR',
+        headerTintColor: 'white'
+    }
+}
 
 export default ARScreen;
