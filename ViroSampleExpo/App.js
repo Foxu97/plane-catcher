@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 import {StyleSheet,NativeEventEmitter,DeviceEventEmitter,AsyncStorage,PermissionsAndroid} from 'react-native';
 //import ReactNativeHeading from 'react-native-heading';
-import Geolocation from 'react-native-geolocation-service';
+// import Geolocation from 'react-native-geolocation-service';
 import * as Location from 'expo-location';
 import * as Permissions from 'expo-permissions';
 import {
