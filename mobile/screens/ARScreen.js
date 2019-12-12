@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Text, View, StyleSheet } from 'react-native';
 import * as Location from 'expo-location';
 import * as Permissions from 'expo-permissions';
+import { Accelerometer, Gyroscope } from 'expo-sensors';
 
 import CameraComponent from '../components/CameraComponent';
 
@@ -13,25 +14,57 @@ const samplePlane = {
 const ARScreen = () => {
     const [hasLocationPermission, setHasLocationPermission] = useState();
     const [heading, setHeading] = useState();
+    const [gyroscopeData, setGyroscopeData] = useState();
+    const [accelerometerData, setAccelerometerData] = useState();
 
     const askForLocationPermission = async () => {
         let { status } = await Permissions.askAsync(Permissions.LOCATION);
         setHasLocationPermission(status === 'granted');
 
         Location.watchHeadingAsync((heading) => {
-            console.log(heading)
+           // console.log(heading)
+           setHeading(heading)
         })
     }
 
     useEffect(() => {
         askForLocationPermission();
+
+        Accelerometer.addListener(accelerometerData => {
+            //console.log("Accelerometer: ", accelerometerData);
+            setAccelerometerData(accelerometerData)
+        });
+
+        Gyroscope.addListener(gyroscopeData => {
+            console.log("Gyroscope: ", gyroscopeData);
+            setGyroscopeData(gyroscopeData)
+        })
+
     }, [])
 
   return (
     <View style={styles.screen}>
       <CameraComponent style={styles.cameraOutput}/>
       <View style={styles.planeInfo}>
-          <Text>Plane info</Text>
+      {accelerometerData ? 
+          <View style={{flex: 1}}>
+                <Text>Accelerometer</Text>
+                <Text>x {accelerometerData.x}</Text>
+                <Text>y: {accelerometerData.y}</Text>
+                <Text>z: {accelerometerData.z}</Text>
+          </View> : null }
+          {gyroscopeData ? 
+          <View style={{flex: 1}}>
+              <Text>Gyroscope</Text>
+              <Text>x {gyroscopeData.x}</Text>
+              <Text>y: {gyroscopeData.y}</Text>
+              <Text>z: {gyroscopeData.z}</Text>
+          </View> : null }
+          {heading ? 
+          <View style={{flex: 1}}>
+              <Text>Location Heading</Text>
+              <Text>{heading.trueHeading}</Text>
+          </View> : null}
       </View>
     </View>
   );
@@ -46,7 +79,8 @@ const styles = StyleSheet.create({
     },
 
     planeInfo: {
-        flex: 1
+        flex: 1,
+        flexDirection: 'row'
     }
 });
 
