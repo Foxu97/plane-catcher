@@ -27,16 +27,32 @@ const ARScreen = () => {
         })
     }
 
+    const calculatePitch = (x,y,z) => {
+        //Pitch = atan2(-X, sqrt(Y*Y + Z*Z)) * 180/M_PI;
+        let pitch = Math.atan2(-x, Math.sqrt(y*y + z*z)) * 180 / Math.PI;
+        console.log("Pitch: ", pitch)
+        
+    }
+
+    const calculateRoll = (y,z) => {
+        //Roll = atan2(Y, Z) * 180/M_PI;
+        let roll = Math.atan2(y,z) * 180 / Math.PI;
+        console.log("Roll: ", roll)
+    }
+
     useEffect(() => {
         askForLocationPermission();
 
         Accelerometer.addListener(accelerometerData => {
             //console.log("Accelerometer: ", accelerometerData);
-            setAccelerometerData(accelerometerData)
+            setAccelerometerData(accelerometerData);
+
+            calculatePitch(accelerometerData.x, accelerometerData.y, accelerometerData.z);
+            calculateRoll(accelerometerData.y, accelerometerData.z)
         });
 
         Gyroscope.addListener(gyroscopeData => {
-            console.log("Gyroscope: ", gyroscopeData);
+            //console.log("Gyroscope: ", gyroscopeData);
             setGyroscopeData(gyroscopeData)
         })
 
