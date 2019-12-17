@@ -3,10 +3,9 @@ import {  createAppContainer } from 'react-navigation';
 import { createStackNavigator } from 'react-navigation-stack';
 import { createMaterialBottomTabNavigator } from 'react-navigation-material-bottom-tabs';
 import { createBottomTabNavigator } from 'react-navigation-tabs';
-// import { Ionicons } from '@expo/vector-icons';
 import { createDrawerNavigator } from 'react-navigation-drawer';
 import { Platform } from 'react-native';
-
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import MapScreen from '../screens/MapScreen';
 import ARScreen from '../screens/ARScreen';
 //import SignInScreen from '../screens/SignInScreen';
@@ -44,18 +43,18 @@ const AppBottomTabNavigation = createMaterialBottomTabNavigator({
     Map: {
         screen: AppNavigator,
         navigationOptions: {
-            // tabBarIcon: (tabInfo) => {
-            //     return <Ionicons name='md-map' size={25} color={tabInfo.tintColor} />
-            // },
+            tabBarIcon: (tabInfo) => {
+                return <Ionicons name='md-map' size={25} color={tabInfo.tintColor} />
+            },
             tabBarColor: Colors.primaryColor,
         }
     },
     AR: {
         screen: ARScreenNavigator,
         navigationOptions: {
-            // tabBarIcon: (tabInfo) => {
-            //     return <Ionicons name='md-camera' size={25} color={tabInfo.tintColor} />
-            // },
+            tabBarIcon: (tabInfo) => {
+                return <Ionicons name='md-camera' size={25} color={tabInfo.tintColor} />
+            },
             tabBarColor: Colors.accent
         }
 

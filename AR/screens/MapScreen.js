@@ -27,20 +27,17 @@ const MapScreen = props => {
     const verifyPermissions = async () => {
         try {
             const result = await Permissions.askAsync(Permissions.LOCATION);
-            console.log(result)
             if (result.status !== 'granted') {
                 Alert.alert('Insufficient permissions!', [{ text: 'OK!' }]);
             } else {
                 setHasLocationPermission(true);
                 console.log("Permission for LOCATION granted");
-
                 locationResult = await Location.watchPositionAsync({accuracy:Location.Accuracy.High}, (newUserLocation) => {
                     setUserLocation({
                         latitude: newUserLocation.coords.latitude,
                         longitude: newUserLocation.coords.longitude
                 });
                 });
-                
             }
         } catch (err) {
             console.log(err)
