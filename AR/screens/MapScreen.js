@@ -7,7 +7,7 @@ import * as Location from 'expo-location';
 
 import Colors from '../constants/Colors';
 import manMarker from '../assets/standing-up-man-.png';
-import CustomHeaderButton from '../components/CustomHeaderButton';
+//import CustomHeaderButton from '../components/CustomHeaderButton';
 
 const MapScreen = props => {
     const [userLocation, setUserLocation] = useState();
@@ -100,17 +100,17 @@ const styles = StyleSheet.create({
 
 MapScreen.navigationOptions = navData => {
     return {
-        headerTitle: 'Map',
-        headerRight: <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
-            <Item
-                title="Add Place"
-                iconName='md-camera'
-                onPress={() => {
-                    navData.navigation.navigate('AR');
-                }}
-            />
+        headerTitle: 'Map'
+        // headerRight: <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
+        //     <Item
+        //         title="Add Place"
+        //         iconName='md-camera'
+        //         onPress={() => {
+        //             navData.navigation.navigate('AR');
+        //         }}
+        //     />
 
-        </HeaderButtons>
+        // </HeaderButtons>
     }
 }
 
