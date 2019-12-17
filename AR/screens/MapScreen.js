@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { HeaderButtons, Item } from 'react-navigation-header-buttons';
 import MapView from 'react-native-maps';
+import { Marker } from 'react-native-maps';
 import * as Permissions from 'expo-permissions';
 import { View, Text, Button, StyleSheet, Dimensions, Alert, Platform } from 'react-native';
 import * as Location from 'expo-location';
@@ -12,6 +13,7 @@ import manMarker from '../assets/standing-up-man-.png';
 const MapScreen = props => {
     const [userLocation, setUserLocation] = useState();
     const [hasLocationPermission, setHasLocationPermission] = useState(false);
+    const [watchId, setWatchID] = useState();
 
     const setRegion = () => ({
         latitude: userLocation.latitude,
@@ -20,30 +22,25 @@ const MapScreen = props => {
         longitudeDelta: 0.0421
     });
 
+    let locationResult
+
     const verifyPermissions = async () => {
         try {
             const result = await Permissions.askAsync(Permissions.LOCATION);
+            console.log(result)
             if (result.status !== 'granted') {
                 Alert.alert('Insufficient permissions!', [{ text: 'OK!' }]);
-                //console.log("No permission for LOCATION granted");
             } else {
                 setHasLocationPermission(true);
-                //console.log("Permission for LOCATION granted");
-                // const watchID = navigator.geolocation.watchPosition(
-                //     (position) => {
-                //         //console.log("New position: ", position)
-                //         setUserLocation({
-                //             latitude: position.coords.latitude,
-                //             longitude: position.coords.longitude
-                //         })
-                //     },
-                //     (err) => console.log(err),
-                //     { enableHighAccuracy: true, timeout: 8000, maximumAge: 10000 }
-                // )
-                // return watchID;
-                Location.watchPositionAsync(null, (location) => {
-                    console.log(location)
-                })
+                console.log("Permission for LOCATION granted");
+
+                locationResult = await Location.watchPositionAsync({accuracy:Location.Accuracy.High}, (newUserLocation) => {
+                    setUserLocation({
+                        latitude: newUserLocation.coords.latitude,
+                        longitude: newUserLocation.coords.longitude
+                });
+                });
+                
             }
         } catch (err) {
             console.log(err)
@@ -51,10 +48,10 @@ const MapScreen = props => {
 
     }
     useEffect(() => {
-        const watchID = verifyPermissions(); //not shure if ok
+        verifyPermissions();
+
         return () => {
-            console.log("Component unmount")
-            navigator.geolocation.clearWatch(watchID);
+            locationResult.remove();
         }
     }, []);
 

@@ -3,6 +3,8 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <!-- OPTIONAL PERMISSIONS, REMOVE WHATEVER YOU DO NOT NEED -->
     <uses-permission android:name="android.permission.MANAGE_DOCUMENTS" />
@@ -43,6 +45,9 @@
         </intent-filter>
       </activity>
       <activity android:name="com.facebook.react.devsupport.DevSettingsActivity" />
+      <meta-data
+        android:name="com.google.android.geo.API_KEY"
+        android:value="AIzaSyCqJcsYreclVpfCBdj9cKx9vdROf5RVv-s"/>
     </application>
 
 </manifest>

@@ -11,6 +11,7 @@ import com.ar.generated.BasePackageList;
 import com.swmansion.reanimated.ReanimatedPackage;
 import com.swmansion.rnscreens.RNScreensPackage;
 import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
+import com.airbnb.android.react.maps.MapsPackage;
 
 import org.unimodules.adapters.react.ReactAdapterPackage;
 import org.unimodules.adapters.react.ModuleRegistryAdapter;
@@ -43,6 +44,7 @@ public class MainApplication extends Application implements ReactApplication {
           new ReanimatedPackage(),
           new RNGestureHandlerPackage(),
           new RNScreensPackage(),
+          new MapsPackage(),
           new ModuleRegistryAdapter(mModuleRegistryProvider)
       );
     }
