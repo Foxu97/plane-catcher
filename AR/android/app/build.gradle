@@ -99,6 +99,10 @@ android {
     compileSdkVersion rootProject.ext.compileSdkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
 
+   packagingOptions {
+       pickFirst '**/libjsc.so'
+   }
+
     defaultConfig {
         applicationId "com.ar"
         minSdkVersion rootProject.ext.minSdkVersion
