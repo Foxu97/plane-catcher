@@ -10,6 +10,8 @@ import {
   Viro360Image,
 } from 'react-viro';
 
+import {View, Text } from 'react-native'
+
 export default class HelloWorldScene extends Component {
 
   constructor() {
@@ -21,7 +23,7 @@ export default class HelloWorldScene extends Component {
   render() {
     return (
       <ViroScene>
-        <Viro360Image source={require('./res/guadalupe_360.jpg')} />
+        {/* <Viro360Image source={require('./res/guadalupe_360.jpg')} /> */}
         <ViroText text="Hello World!" width={2} height={2} position={[0, 0, -2]} style={styles.helloWorldTextStyle} />
       </ViroScene>
     );
