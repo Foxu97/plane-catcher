@@ -101,9 +101,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     //buildToolsVersion "28.0.3"
 
-//    packagingOptions {
-//        pickFirst '**/libjsc.so'
-//    }
+   packagingOptions {
+       pickFirst '**/libjsc.so'
+   }
 
     defaultConfig {
         applicationId "com.ar"

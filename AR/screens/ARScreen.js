@@ -1,27 +1,27 @@
-
-
 import React from 'react';
 
 import {
   AppRegistry,
   ViroScene,
-  ViroVRSceneNavigator,
+  ViroARSceneNavigator,
 } from 'react-viro';
 
 
-// Sets the default scene you want for AR and VR
-var InitialARScene = require('./js/HelloWorldScene');
+var InitialARScene = require('./js/HelloWorldSceneAR');
 
-
-
-const ARScene = props => {
-
+const ARScreen = props => {
 
   return (
-    <ViroVRSceneNavigator
+    <ViroARSceneNavigator
       initialScene={{ scene: InitialARScene }} />
   );
 }
 
+ARScreen.navigationOptions = navData => {
+  return {
+      headerTitle: 'AR'
+  }
+}
 
-export default ARScene;
+
+export default ARScreen;

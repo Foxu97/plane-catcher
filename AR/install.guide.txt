@@ -1,0 +1,7 @@
+npm install
+cd android
+gradlew.bat installGvrDebug
+npm start 
+if servers response 500
+adb reverse tcp:8081 tcp:8081
+npm start
