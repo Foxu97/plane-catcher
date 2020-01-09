@@ -2,11 +2,12 @@
 
 import React, { Component } from 'react';
 
-import {StyleSheet, Platform} from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 
 import {
   ViroARScene,
   ViroText,
+  ViroConstants
 } from 'react-viro';
 
 import Constants from 'expo-constants';
@@ -20,7 +21,7 @@ export default class HelloWorldSceneAR extends Component {
 
     // Set initial state here
     this.state = {
-      text : "Initializing AR...",
+      text: "Initializing AR...",
       northPointX: 0,
       northPointZ: 0,
       southPointX: 0,
@@ -29,23 +30,19 @@ export default class HelloWorldSceneAR extends Component {
       eastPointZ: 0,
       westPointX: 0,
       westPointZ: 0,
-      heading: "pusty string"
+      churchPointX: 0,
+      churchPointZ: 0,
+      heading: null,
+      userLocation: null,
+      hasARInitialized: false
     };
 
     // bind 'this' to functions
     this._onInitialized = this._onInitialized.bind(this);
     this._latLongToMerc = this._latLongToMerc.bind(this);
     this._transformPointToAR = this._transformPointToAR.bind(this);
-  }
-
-  componentWillMount() {
-    if (Platform.OS === 'android' && !Constants.isDevice) {
-      this.setState({
-        errorMessage: 'Oops, this will not work on Sketch in an Android emulator. Try it on your device!',
-      });
-    } else {
-      this._getLocationAsync();
-    }
+    this._onTrackingUpdated = this._onTrackingUpdated.bind(this);
+    this._getWorldDirections = this._getWorldDirections.bind(this);
   }
 
   _getLocationAsync = async () => {
@@ -57,30 +54,91 @@ export default class HelloWorldSceneAR extends Component {
     }
 
     let heading = await Location.getHeadingAsync();
+    let location = await Location.getCurrentPositionAsync({accuracy:Location.Accuracy.High});
+    this.setState({ location: location});
     this.setState({ heading: heading.trueHeading });
+
   };
 
+  
   render() {
     return (
-      <ViroARScene onTrackingUpdated={this._onInitialized} >
-        {this.state.northPointX ? <ViroText text={this.state.heading.toString()} scale={[.2,2,.2]} position={[0, -2, -5]} style={styles.helloWorldTextStyle} /> : null}
-        {this.state.northPointX ? <ViroText text="North Text" scale={[3, 3, 3]} transformBehaviors={["billboard"]} position={[this.state.northPointX, 0, this.state.northPointZ]} style={styles.helloWorldTextStyle} />  : null}
-        {this.state.northPointX ? <ViroText text="South Text" scale={[3, 3, 3]} transformBehaviors={["billboard"]} position={[this.state.southPointX, 0, this.state.southPointZ]} style={styles.helloWorldTextStyle} /> : null}
-        {this.state.northPointX ? <ViroText text="West Text" scale={[3, 3, 3]} transformBehaviors={["billboard"]} position={[this.state.westPointX, 0, this.state.westPointZ]} style={styles.helloWorldTextStyle} /> : null}
-        {this.state.northPointX ? <ViroText text="East Text" scale={[3, 3, 3]} transformBehaviors={["billboard"]} position={[this.state.eastPointX, 0, this.state.eastPointZ]} style={styles.helloWorldTextStyle} /> : null}
+      <ViroARScene onTrackingUpdated={this._onTrackingUpdated} >
+        {/* {this.state.location ? <ViroText text={this.state.location.coords.latitude.toString()} scale={[.2, 2, .2]} position={[0, -2, -5]} style={styles.helloWorldTextStyle} /> : null}
+        {this.state.location ? <ViroText text={this.state.location.coords.longitude.toString()} scale={[.2, -2, .2]} position={[0, -2, -5]} style={styles.helloWorldTextStyle} /> : null} */}
+        {this.state.heading ? <ViroText text={this.state.heading.toString()} scale={[.2, 2, .2]} position={[0, -2, -5]} style={styles.helloWorldTextStyle} /> : null}
+        {this.state.northPointX ? <ViroText text="North Text" scale={[3, 3, 3]} transformBehaviors={["billboard"]} position={[this.state.northPointX, 0, this.state.northPointZ]} style={styles.helloWorldTextStyle} /> : null}
+        {this.state.southPointX ? <ViroText text="South Text" scale={[3, 3, 3]} transformBehaviors={["billboard"]} position={[this.state.southPointX, 0, this.state.southPointZ]} style={styles.helloWorldTextStyle} /> : null}
+        {this.state.westPointX ? <ViroText text="West Text" scale={[3, 3, 3]} transformBehaviors={["billboard"]} position={[this.state.westPointX, 0, this.state.westPointZ]} style={styles.helloWorldTextStyle} /> : null}
+        {this.state.eastPointX ? <ViroText text="East Text" scale={[3, 3, 3]} transformBehaviors={["billboard"]} position={[this.state.eastPointX, 0, this.state.eastPointZ]} style={styles.helloWorldTextStyle} /> : null}
+        {this.state.churchPointX ? <ViroText text="Church Text" scale={[3, 3, 3]} transformBehaviors={["billboard"]} position={[this.state.churchPointX, 0, this.state.churchPointZ]} style={styles.helloWorldTextStyle} /> : null}
       </ViroARScene>
     );
   }
 
-  _onInitialized() {
-    var northPoint = this._transformPointToAR(47.618574, -122.338475);
-    var eastPoint = this._transformPointToAR(47.618534, -122.338061);
-    var westPoint = this._transformPointToAR(47.618539, -122.338644);
-    var southPoint = this._transformPointToAR(47.618210, -122.338455);
-    console.log("obj north final x:" + northPoint.x + "final z:" + northPoint.z);
-    console.log("obj south final x:" + southPoint.x + "final z:" + southPoint.z);
-    console.log("obj east point x" + eastPoint.x + "final z" + eastPoint.z);
-    console.log("obj west point x" + westPoint.x + "final z" + westPoint.z);
+  // _getWorldDirections(location, theform) {
+  //   var num = theform.original.value, rounded = theform.rounded
+  //   var with2Decimals = num.toString().match(/^-?\d+(?:\.\d{0,2})?/)[0]
+  //   rounded.value = with2Decimals
+
+  //   return {n, s, e, w}
+  // }
+
+  async _onButtonTap() {
+    let heading = await Location.getHeadingAsync();
+    this.setState({ heading: Math.floor(heading.trueHeading) });
+  };
+
+  _onTrackingUpdated(state, reason) {
+    if (!this.state.hasARInitialized && state === ViroConstants.TRACKING_NORMAL) {
+      this.setState(
+        {
+          hasARInitialized: true,
+        },
+        () => {
+          this._onInitialized();
+        }
+      );
+    }
+  };
+
+_getWorldDirections(lat, lng) {
+    function to4Decimals(number) {
+      const rounded = number.toString().match(/^-?\d+(?:\.\d{0,4})?/)[0];
+      return +rounded;
+    }
+    var with4DecimalsLat = to4Decimals(lat)
+    var with4DecimalsLng = to4Decimals(lng)
+    const diffrence = 0.0005
+
+    const north = {
+      lat: with4DecimalsLat + diffrence,
+      lng: with4DecimalsLng
+    }
+    const south = {
+      lat: parseFloat((with4DecimalsLat - diffrence).toFixed(4)),
+      lng: with4DecimalsLng
+    }
+    const east = {
+      lat: with4DecimalsLat,
+      lng: with4DecimalsLng + diffrence
+    }
+    const west = {
+      lat: with4DecimalsLat,
+      lng: parseFloat((with4DecimalsLng - diffrence).toFixed(4))
+    }
+
+    return {north: north, south: south, east: east, west: west}
+  }
+
+  async _onInitialized() {
+    await this._getLocationAsync();
+    var churchPoint = this._transformPointToAR(50.148238, 18.786314);
+    const worldDirections = this._getWorldDirections(this.state.location.coords.latitude, this.state.location.coords.longitude);
+    var northPoint = this._transformPointToAR(worldDirections.north.lat, worldDirections.north.lng);
+    var eastPoint = this._transformPointToAR(worldDirections.east.lat, worldDirections.east.lng);
+    var westPoint = this._transformPointToAR(worldDirections.west.lat, worldDirections.west.lng);
+    var southPoint = this._transformPointToAR(worldDirections.south.lat, worldDirections.south.lng);
     this.setState({
       northPointX: northPoint.x,
       northPointZ: northPoint.z,
@@ -90,36 +148,39 @@ export default class HelloWorldSceneAR extends Component {
       eastPointZ: eastPoint.z,
       westPointX: westPoint.x,
       westPointZ: westPoint.z,
-      text : "AR Init called."
+      churchPointX: churchPoint.x,
+      churchPointZ: churchPoint.z,
+      text: "AR Init called."
     });
   }
 
- _latLongToMerc(lat_deg, lon_deg) {
-   var lon_rad = (lon_deg / 180.0 * Math.PI)
-   var lat_rad = (lat_deg / 180.0 * Math.PI)
-   var sm_a = 6378137.0
-   var xmeters  = sm_a * lon_rad
-   var ymeters = sm_a * Math.log((Math.sin(lat_rad) + 1) / Math.cos(lat_rad))
-   return ({x:xmeters, y:ymeters});
-}
+  _latLongToMerc(lat_deg, lon_deg) {
+    var lon_rad = (lon_deg / 180.0 * Math.PI)
+    var lat_rad = (lat_deg / 180.0 * Math.PI)
+    var sm_a = 6378137.0
+    var xmeters = sm_a * lon_rad
+    var ymeters = sm_a * Math.log((Math.sin(lat_rad) + 1) / Math.cos(lat_rad))
+    return ({ x: xmeters, y: ymeters });
+  }
 
-_transformPointToAR(lat, long) {
-  var objPoint = this._latLongToMerc(lat, long);
-  var devicePoint = this._latLongToMerc(47.618534, -122.338478);
-  console.log("objPointZ: " + objPoint.y + ", objPointX: " + objPoint.x)
-  // latitude(north,south) maps to the z axis in AR
-  // longitude(east, west) maps to the x axis in AR
-  var objFinalPosZ = objPoint.y - devicePoint.y;
-  var objFinalPosX = objPoint.x - devicePoint.x;
-  //flip the z, as negative z(is in front of us which is north, pos z is behind(south).
-  let angle = this.state.heading;
-  let newRotatedX = objFinalPosX * Math.cos(angle) - objFinalPosZ * Math.sin(angle)
-  let newRotatedZ = objFinalPosZ * Math.cos(angle) + objFinalPosX * Math.sin(angle)
+  _transformPointToAR(lat, long) {
+    var objPoint = this._latLongToMerc(lat, long);
+    var devicePoint = this._latLongToMerc(this.state.location.coords.latitude, this.state.location.coords.longitude);
+    console.log("objPointZ: " + objPoint.y + ", objPointX: " + objPoint.x)
+    // latitude(north,south) maps to the z axis in AR
+    // longitude(east, west) maps to the x axis in AR
+    var objFinalPosZ = objPoint.y - devicePoint.y;
+    var objFinalPosX = objPoint.x - devicePoint.x;
+    //flip the z, as negative z(is in front of us which is north, pos z is behind(south).
+    let angle = this.state.heading;
+    const angleRadian = (angle * Math.PI) / 180; // degree to radian
+    let newRotatedX = objFinalPosX * Math.cos(angleRadian) - objFinalPosZ * Math.sin(angleRadian)
+    let newRotatedZ = objFinalPosZ * Math.cos(angleRadian) + objFinalPosX * Math.sin(angleRadian)
 
 
-  //return ({x:objFinalPosX, z:-objFinalPosZ});
-  return ({x:newRotatedX, z:-newRotatedZ});
-}
+    //return ({x:objFinalPosX, z:-objFinalPosZ});
+    return ({ x: newRotatedX, z: -newRotatedZ });
+  }
 
 }
 
@@ -127,7 +188,7 @@ var styles = StyleSheet.create({
   helloWorldTextStyle: {
     fontFamily: 'Arial',
     fontSize: 30,
-    color: '#000000',
+    color: '#ff0000',
     textAlignVertical: 'center',
     textAlign: 'center',
   },
