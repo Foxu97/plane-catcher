@@ -8,6 +8,7 @@ const dbConfig = require('./config/dbConfig');
 
 const planeRoutes = require('./routes/plane');
 const userRoutes = require('./routes/user');
+const debugRoutes = require('./routes/debug');
 
 
 app.use(bodyParser.json());
@@ -31,6 +32,7 @@ app.use('/api/v1', router);
 
 app.use('/user', userRoutes);
 app.use('/plane', planeRoutes);
+app.use('/debug', debugRoutes);
 
 
 mongoose.connect(

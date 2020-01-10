@@ -84,3 +84,35 @@ exports.getAllPlanesInRange = (req, res, next) => {
 
     res.status(200).json({distanceInMeters: distanceInMeters, bearingInDegrees: bearing, angleBetweenPlaneAndObserverInDegrees: angle});
 }
+
+exports.findTerminalCoordinates = (req, res, next) => {
+    let R = 6378.1 //Radius of the Earth
+    userCoords = {
+        latitude: 50.142346,
+        longitude: 18.777350
+    }
+
+    planeCoords = {
+        latitude: 50.166005,
+        longitude: 18.815436
+    }
+
+    const bearing = toRadians(calcBearing(userCoords, planeCoords));
+
+    let distance = 0.0005 // distance in km witch i want to draw point
+
+    let lat1 = toRadians(userCoords.latitude);
+    let lng1 = toRadians(userCoords.longitude);
+
+    let lat2 = Math.asin( Math.sin(lat1)*Math.cos(distance/R) +
+     Math.cos(lat1)*Math.sin(distance/R)*Math.cos(bearing))
+
+    let lng2 = lng1 + Math.atan2(Math.sin(bearing)*Math.sin(distance/R)*Math.cos(lat1),
+             Math.cos(distance/R)-Math.sin(lat1)*Math.sin(lat2))
+
+    lat2 = toDegrees(lat2);
+    lng2 = toDegrees(lng2);
+
+    console.log(lat2)
+    console.log(lng2)
+}

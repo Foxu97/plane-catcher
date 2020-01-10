@@ -43,6 +43,8 @@ export default class HelloWorldSceneAR extends Component {
     this._transformPointToAR = this._transformPointToAR.bind(this);
     this._onTrackingUpdated = this._onTrackingUpdated.bind(this);
     this._getWorldDirections = this._getWorldDirections.bind(this);
+
+    //this.serverLog = this.serverLog.bind(this);
   }
 
   _getLocationAsync = async () => {
@@ -67,27 +69,14 @@ export default class HelloWorldSceneAR extends Component {
         {/* {this.state.location ? <ViroText text={this.state.location.coords.latitude.toString()} scale={[.2, 2, .2]} position={[0, -2, -5]} style={styles.helloWorldTextStyle} /> : null}
         {this.state.location ? <ViroText text={this.state.location.coords.longitude.toString()} scale={[.2, -2, .2]} position={[0, -2, -5]} style={styles.helloWorldTextStyle} /> : null} */}
         {this.state.heading ? <ViroText text={this.state.heading.toString()} scale={[.2, 2, .2]} position={[0, -2, -5]} style={styles.helloWorldTextStyle} /> : null}
-        {this.state.northPointX ? <ViroText text="North Text" scale={[3, 3, 3]} transformBehaviors={["billboard"]} position={[this.state.northPointX, 0, this.state.northPointZ]} style={styles.helloWorldTextStyle} /> : null}
+        {this.state.northPointX ? <ViroText text={"North Text" + this.state.northPointX} scale={[3, 3, 3]} transformBehaviors={["billboard"]} position={[this.state.northPointX, 0, this.state.northPointZ]} style={styles.helloWorldTextStyle} /> : null}
         {this.state.southPointX ? <ViroText text="South Text" scale={[3, 3, 3]} transformBehaviors={["billboard"]} position={[this.state.southPointX, 0, this.state.southPointZ]} style={styles.helloWorldTextStyle} /> : null}
         {this.state.westPointX ? <ViroText text="West Text" scale={[3, 3, 3]} transformBehaviors={["billboard"]} position={[this.state.westPointX, 0, this.state.westPointZ]} style={styles.helloWorldTextStyle} /> : null}
         {this.state.eastPointX ? <ViroText text="East Text" scale={[3, 3, 3]} transformBehaviors={["billboard"]} position={[this.state.eastPointX, 0, this.state.eastPointZ]} style={styles.helloWorldTextStyle} /> : null}
-        {this.state.churchPointX ? <ViroText text="Church Text" scale={[3, 3, 3]} transformBehaviors={["billboard"]} position={[this.state.churchPointX, 0, this.state.churchPointZ]} style={styles.helloWorldTextStyle} /> : null}
+        {this.state.churchPointX ? <ViroText text={"Church Text " + this.state.churchPointX.toString()} scale={[13, 13, 13]} transformBehaviors={["billboard"]} position={[this.state.churchPointX, 0, this.state.churchPointZ]} style={styles.helloWorldTextStyle} /> : null}
       </ViroARScene>
     );
   }
-
-  // _getWorldDirections(location, theform) {
-  //   var num = theform.original.value, rounded = theform.rounded
-  //   var with2Decimals = num.toString().match(/^-?\d+(?:\.\d{0,2})?/)[0]
-  //   rounded.value = with2Decimals
-
-  //   return {n, s, e, w}
-  // }
-
-  async _onButtonTap() {
-    let heading = await Location.getHeadingAsync();
-    this.setState({ heading: Math.floor(heading.trueHeading) });
-  };
 
   _onTrackingUpdated(state, reason) {
     if (!this.state.hasARInitialized && state === ViroConstants.TRACKING_NORMAL) {
@@ -133,12 +122,14 @@ _getWorldDirections(lat, lng) {
 
   async _onInitialized() {
     await this._getLocationAsync();
-    var churchPoint = this._transformPointToAR(50.148238, 18.786314);
+    var churchPoint = this._transformPointToAR(50.14234912735104, 18.777355030561928);
     const worldDirections = this._getWorldDirections(this.state.location.coords.latitude, this.state.location.coords.longitude);
     var northPoint = this._transformPointToAR(worldDirections.north.lat, worldDirections.north.lng);
     var eastPoint = this._transformPointToAR(worldDirections.east.lat, worldDirections.east.lng);
     var westPoint = this._transformPointToAR(worldDirections.west.lat, worldDirections.west.lng);
     var southPoint = this._transformPointToAR(worldDirections.south.lat, worldDirections.south.lng);
+
+    // this.serverLog(southPoint.x) 
     this.setState({
       northPointX: northPoint.x,
       northPointZ: northPoint.z,
@@ -181,6 +172,19 @@ _getWorldDirections(lat, lng) {
     //return ({x:objFinalPosX, z:-objFinalPosZ});
     return ({ x: newRotatedX, z: -newRotatedZ });
   }
+
+//   serverLog(message) {
+//     fetch('http://192.168.74.254:8080/debug/consolelog', {
+//   method: 'POST',
+//   headers: {
+//     Accept: 'application/json',
+//     'Content-Type': 'application/json',
+//   },
+//   body: JSON.stringify({
+//     message: message; 
+//   }),
+// });
+//   }
 
 }
 
