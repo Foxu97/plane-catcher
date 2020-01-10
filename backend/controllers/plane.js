@@ -66,43 +66,33 @@ exports.getAllPlanesInRange = (req, res, next) => {
         return res.status(400).send("Invalid query parameters")
     }
     
-    //zlapac wszystkie samoloty w obrebie range
+    const allPlanes = require('../models/dummyPlanesData'); // simulation of getting data from db
 
-    const userCoords = {
-        longitude: req.query.longitude,
-        latitude: req.query.latitude
-    }
+    const planesInRangeOfUser = allPlanes.filter(plane => {
+        const distanceToPlane = getDistance({latitude: userLatitude, longitude: userLongitude}, {latitude: plane.latitude, longitude: plane.longitude})
+        return (distanceToPlane/1000 <= range)
+    });
 
-    const planeCoords = {
-        longitude: pyrzowiceCoords.longitude,
-        latitude: pyrzowiceCoords.latitude
-    }
-    const distanceInMeters = getDistance(userCoords, planeCoords);
-    const bearing = calcBearing(userCoords, planeCoords);
-    const angle = toDegrees(Math.atan(pyrzowiceCoords.altitude / distanceInMeters));
+    planesInRangeOfUser.forEach((plane => {
+        let mappedARCoords = findMappedPlaneCoordinates({ latitude: userLatitude, longitude: userLongitude}, {latitude: plane.latitude, longitude: plane.longitude});
+        plane.arLatitude = mappedARCoords.latitude;
+        plane.arLongitude = mappedARCoords.longitude;
+    }));
 
+    //const distanceInMeters = getDistance(userCoords, planeCoords);
+    //const bearing = calcBearing(userCoords, planeCoords);
+    //const angle = toDegrees(Math.atan(pyrzowiceCoords.altitude / distanceInMeters));
 
-    res.status(200).json({distanceInMeters: distanceInMeters, bearingInDegrees: bearing, angleBetweenPlaneAndObserverInDegrees: angle});
+    res.status(200).json(planesInRangeOfUser);
 }
 
-exports.findTerminalCoordinates = (req, res, next) => {
-    let R = 6378.1 //Radius of the Earth
-    userCoords = {
-        latitude: 50.142346,
-        longitude: 18.777350
-    }
-
-    planeCoords = {
-        latitude: 50.166005,
-        longitude: 18.815436
-    }
-
+const findMappedPlaneCoordinates = (userCoords, planeCoords) => {
+    const R = 6378.1 //Radius of the Earth
     const bearing = toRadians(calcBearing(userCoords, planeCoords));
+    const distance = 0.008 // distance in km witch i want to draw point
 
-    let distance = 0.0005 // distance in km witch i want to draw point
-
-    let lat1 = toRadians(userCoords.latitude);
-    let lng1 = toRadians(userCoords.longitude);
+    const lat1 = toRadians(userCoords.latitude);
+    const lng1 = toRadians(userCoords.longitude);
 
     let lat2 = Math.asin( Math.sin(lat1)*Math.cos(distance/R) +
      Math.cos(lat1)*Math.sin(distance/R)*Math.cos(bearing))
@@ -113,6 +103,6 @@ exports.findTerminalCoordinates = (req, res, next) => {
     lat2 = toDegrees(lat2);
     lng2 = toDegrees(lng2);
 
-    console.log(lat2)
-    console.log(lng2)
+    return {latitude: lat2, longitude: lng2}
+
 }

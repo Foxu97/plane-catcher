@@ -8,6 +8,7 @@ import * as Location from 'expo-location';
 
 import Colors from '../constants/Colors';
 import manMarker from '../assets/standing-up-man-.png';
+import planeMarker from '../assets/plane.png';
 //import CustomHeaderButton from '../components/CustomHeaderButton';
 
 const MapScreen = props => {
@@ -15,9 +16,12 @@ const MapScreen = props => {
     const [hasLocationPermission, setHasLocationPermission] = useState(false);
     const [watchId, setWatchID] = useState();
 
-    const setRegion = () => ({
-        latitude: userLocation.latitude,
-        longitude: userLocation.longitude,
+
+    const [planes, setPlanes] = useState();
+
+    const setRegion = (lat, lng) => ({
+        latitude: lat,
+        longitude: lng,
         latitudeDelta: 0.0922,
         longitudeDelta: 0.0421
     });
@@ -37,6 +41,7 @@ const MapScreen = props => {
                         latitude: newUserLocation.coords.latitude,
                         longitude: newUserLocation.coords.longitude
                 });
+                    getPlanesFromAPI(newUserLocation.coords.latitude, newUserLocation.coords.longitude, 50);
                 });
             }
         } catch (err) {
@@ -44,14 +49,34 @@ const MapScreen = props => {
         }
 
     }
+
+    const getPlanesFromAPI = async (userLatitude, userLongitude, range) => {
+        fetch(`http://192.168.74.254:8080/plane?latitude=${userLatitude.toString()}&longitude=${userLongitude.toString()}&range=50`).then(res => {
+            return res.json()
+        }).then(data => {
+            setPlanes(data);
+            //serverLog(data)
+        })
+    }
+    const serverLog = (message) => {
+        fetch('http://192.168.74.254:8080/debug/consolelog', {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message: message
+          }),
+        });
+      }
     useEffect(() => {
         verifyPermissions();
-
+        
         return () => {
             locationResult.remove();
         }
     }, []);
-
 
     return (
         <View style={styles.container}>
@@ -65,9 +90,16 @@ const MapScreen = props => {
                     }} style={styles.mapStyle} >
 
                         <MapView.Marker
-                            coordinate={setRegion()}
+                            coordinate={setRegion(userLocation.latitude, userLocation.longitude)}
                             image={manMarker}
                         />
+                        {planes ? planes.map((plane => {
+                            return <MapView.Marker
+                            coordinate={setRegion(plane.latitude, plane.longitude)}
+                            image={planeMarker}
+                            key={plane.latitude} //temporary solution
+                        />
+                        })) : null}
                     </MapView>
                     :
                     <View>

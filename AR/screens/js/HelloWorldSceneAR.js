@@ -10,7 +10,6 @@ import {
   ViroConstants
 } from 'react-viro';
 
-import Constants from 'expo-constants';
 import * as Location from 'expo-location';
 import * as Permissions from 'expo-permissions';
 
@@ -34,7 +33,8 @@ export default class HelloWorldSceneAR extends Component {
       churchPointZ: 0,
       heading: null,
       userLocation: null,
-      hasARInitialized: false
+      hasARInitialized: false,
+      planes: null
     };
 
     // bind 'this' to functions
@@ -44,7 +44,7 @@ export default class HelloWorldSceneAR extends Component {
     this._onTrackingUpdated = this._onTrackingUpdated.bind(this);
     this._getWorldDirections = this._getWorldDirections.bind(this);
 
-    //this.serverLog = this.serverLog.bind(this);
+    this.serverLog = this.serverLog.bind(this);
   }
 
   _getLocationAsync = async () => {
@@ -56,24 +56,33 @@ export default class HelloWorldSceneAR extends Component {
     }
 
     let heading = await Location.getHeadingAsync();
-    let location = await Location.getCurrentPositionAsync({accuracy:Location.Accuracy.High});
-    this.setState({ location: location});
+    let location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+    this.setState({ location: location });
     this.setState({ heading: heading.trueHeading });
 
   };
 
-  
+
   render() {
     return (
       <ViroARScene onTrackingUpdated={this._onTrackingUpdated} >
-        {/* {this.state.location ? <ViroText text={this.state.location.coords.latitude.toString()} scale={[.2, 2, .2]} position={[0, -2, -5]} style={styles.helloWorldTextStyle} /> : null}
-        {this.state.location ? <ViroText text={this.state.location.coords.longitude.toString()} scale={[.2, -2, .2]} position={[0, -2, -5]} style={styles.helloWorldTextStyle} /> : null} */}
         {this.state.heading ? <ViroText text={this.state.heading.toString()} scale={[.2, 2, .2]} position={[0, -2, -5]} style={styles.helloWorldTextStyle} /> : null}
         {this.state.northPointX ? <ViroText text={"North Text" + this.state.northPointX} scale={[3, 3, 3]} transformBehaviors={["billboard"]} position={[this.state.northPointX, 0, this.state.northPointZ]} style={styles.helloWorldTextStyle} /> : null}
         {this.state.southPointX ? <ViroText text="South Text" scale={[3, 3, 3]} transformBehaviors={["billboard"]} position={[this.state.southPointX, 0, this.state.southPointZ]} style={styles.helloWorldTextStyle} /> : null}
         {this.state.westPointX ? <ViroText text="West Text" scale={[3, 3, 3]} transformBehaviors={["billboard"]} position={[this.state.westPointX, 0, this.state.westPointZ]} style={styles.helloWorldTextStyle} /> : null}
         {this.state.eastPointX ? <ViroText text="East Text" scale={[3, 3, 3]} transformBehaviors={["billboard"]} position={[this.state.eastPointX, 0, this.state.eastPointZ]} style={styles.helloWorldTextStyle} /> : null}
         {this.state.churchPointX ? <ViroText text={"Church Text " + this.state.churchPointX.toString()} scale={[13, 13, 13]} transformBehaviors={["billboard"]} position={[this.state.churchPointX, 0, this.state.churchPointZ]} style={styles.helloWorldTextStyle} /> : null}
+
+        {this.state.planes ? this.state.planes.map((plane) => {
+          return <ViroText 
+          key={plane.latutide} 
+          text={plane.currentPositionDescription.toString()} 
+          scale={[1.75, 1.75, 1.75]} 
+          transformBehaviors={["billboard"]} 
+          position={[plane.arX, 0, plane.arZ]} 
+          style={styles.helloWorldTextStyle} />
+        }) : null}
+
       </ViroARScene>
     );
   }
@@ -91,7 +100,7 @@ export default class HelloWorldSceneAR extends Component {
     }
   };
 
-_getWorldDirections(lat, lng) {
+  _getWorldDirections(lat, lng) {
     function to4Decimals(number) {
       const rounded = number.toString().match(/^-?\d+(?:\.\d{0,4})?/)[0];
       return +rounded;
@@ -117,11 +126,27 @@ _getWorldDirections(lat, lng) {
       lng: parseFloat((with4DecimalsLng - diffrence).toFixed(4))
     }
 
-    return {north: north, south: south, east: east, west: west}
+    return { north: north, south: south, east: east, west: west }
+  }
+
+  async _drawPlanesAR() {
+    const planes = await this._getPlanesFromAPI(this.state.location.coords.latitude, this.state.location.coords.longitude, 50);
+    let calculatedArPlanes = [];
+
+    planes.forEach((plane) => {
+      const arPoint = this._transformPointToAR(plane.arLatitude, plane.arLongitude);
+      plane.arX = arPoint.x;
+      plane.arZ = arPoint.z;
+      calculatedArPlanes.push(plane);
+    })
+    //this.serverLog(calculatedArPlanes);
+    this.setState({planes: calculatedArPlanes});
   }
 
   async _onInitialized() {
     await this._getLocationAsync();
+    await this._drawPlanesAR();
+    
     var churchPoint = this._transformPointToAR(50.14234912735104, 18.777355030561928);
     const worldDirections = this._getWorldDirections(this.state.location.coords.latitude, this.state.location.coords.longitude);
     var northPoint = this._transformPointToAR(worldDirections.north.lat, worldDirections.north.lng);
@@ -168,23 +193,29 @@ _getWorldDirections(lat, lng) {
     let newRotatedX = objFinalPosX * Math.cos(angleRadian) - objFinalPosZ * Math.sin(angleRadian)
     let newRotatedZ = objFinalPosZ * Math.cos(angleRadian) + objFinalPosX * Math.sin(angleRadian)
 
-
-    //return ({x:objFinalPosX, z:-objFinalPosZ});
     return ({ x: newRotatedX, z: -newRotatedZ });
   }
 
-//   serverLog(message) {
-//     fetch('http://192.168.74.254:8080/debug/consolelog', {
-//   method: 'POST',
-//   headers: {
-//     Accept: 'application/json',
-//     'Content-Type': 'application/json',
-//   },
-//   body: JSON.stringify({
-//     message: message; 
-//   }),
-// });
-//   }
+  async _getPlanesFromAPI(userLatitude, userLongitude, range) {
+    return fetch(`http://192.168.74.254:8080/plane?latitude=${userLatitude.toString()}&longitude=${userLongitude.toString()}&range=50`).then(res => {
+      return res.json();
+  }).then(data => {
+      return data;
+  });
+  }
+
+  serverLog(message) {
+    fetch('http://192.168.74.254:8080/debug/consolelog', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message: message
+      }),
+    });
+  }
 
 }
 
