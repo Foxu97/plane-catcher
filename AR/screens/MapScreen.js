@@ -51,7 +51,7 @@ const MapScreen = props => {
     }
 
     const getPlanesFromAPI = async (userLatitude, userLongitude, range) => {
-        fetch(`http://192.168.74.254:8080/plane?latitude=${userLatitude.toString()}&longitude=${userLongitude.toString()}&range=50`).then(res => {
+        fetch(`http://192.168.74.254:8080/plane?latitude=${userLatitude.toString()}&longitude=${userLongitude.toString()}&range=50&heading=0`).then(res => {
             return res.json()
         }).then(data => {
             setPlanes(data);

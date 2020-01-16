@@ -76,13 +76,17 @@ export default class HelloWorldSceneAR extends Component {
 
         {this.state.planes ? this.state.planes.map((plane) => {
           return <ViroText 
-          key={plane.latutide} 
-          text={plane.currentPositionDescription.toString()} 
+          key={plane.icao24} 
+          text={plane.icao24} 
           scale={[1.75, 1.75, 1.75]} 
           transformBehaviors={["billboard"]} 
-          position={[plane.arX, 0, plane.arZ]} 
+          position={[plane.arPoint.x, 0, plane.arPoint.z]} 
           style={styles.helloWorldTextStyle} />
-        }) : null}
+        }) : <ViroText 
+          text="No plane fetched yet"
+          position={[0, 0, -2]}
+          style={styles.helloWorldTextStyle}
+        />}
 
       </ViroARScene>
     );
@@ -131,17 +135,22 @@ export default class HelloWorldSceneAR extends Component {
   }
 
   async _drawPlanesAR() {
-    const planes = await this._getPlanesFromAPI(this.state.location.coords.latitude, this.state.location.coords.longitude, 50);
-    let calculatedArPlanes = [];
+    const planes = await this._getPlanesFromAPI(this.state.location.coords.latitude, this.state.location.coords.longitude, 100, this.state.heading);
+    // let calculatedArPlanes = [];
 
-    planes.forEach((plane) => {
-      const arPoint = this._transformPointToAR(plane.arLatitude, plane.arLongitude);
-      plane.arX = arPoint.x;
-      plane.arZ = arPoint.z;
-      calculatedArPlanes.push(plane);
-    })
+    // planes.forEach((plane) => {
+    //   const arPoint = this._transformPointToAR(plane.arLatitude, plane.arLongitude);
+    //   plane.arX = arPoint.x;
+    //   plane.arZ = arPoint.z;
+    //   calculatedArPlanes.push(plane);
+    // })
     //this.serverLog(calculatedArPlanes);
-    this.setState({planes: calculatedArPlanes});
+    this.setState({planes: planes});
+    // this.state.planes.forEach(plane => {
+    //   this.serverLog(plane.arPoint.x)
+    //   this.serverLog(plane.arPoint.z)
+    // })
+    this.serverLog(planes)
   }
 
   async _onInitialized() {
@@ -197,8 +206,8 @@ export default class HelloWorldSceneAR extends Component {
     return ({ x: newRotatedX, z: -newRotatedZ });
   }
 
-  async _getPlanesFromAPI(userLatitude, userLongitude, range) {
-    return fetch(`http://192.168.74.254:8080/plane?latitude=${userLatitude.toString()}&longitude=${userLongitude.toString()}&range=50`).then(res => {
+  async _getPlanesFromAPI(userLatitude, userLongitude, range, heading) {
+    return fetch(`http://192.168.74.254:8080/plane?latitude=${userLatitude.toString()}&longitude=${userLongitude.toString()}&range=50&heading=${heading}`).then(res => {
       return res.json();
   }).then(data => {
       return data;

@@ -46,6 +46,7 @@ exports.getAllPlanesInRange = async (req, res, next) => {
     const userLatitude = req.query.latitude;
     const userLongitude = req.query.longitude;
     const range = req.query.range;
+    const userHeading = req.query.heading;
     if (!req.query.latitude || !req.query.longitude || !req.query.range){
         return res.status(400).send("Invalid query parameters")
     }
@@ -65,17 +66,24 @@ exports.getAllPlanesInRange = async (req, res, next) => {
                     let mappedARCoords = findMappedCoordinates({ latitude: userLatitude, longitude: userLongitude}, {latitude: plane.latitude, longitude: plane.longitude});
                     plane.arLatitude = mappedARCoords.latitude;
                     plane.arLongitude = mappedARCoords.longitude;
+                    plane.arPoint = transformPointToAR(plane.arLatitude, plane.arLongitude, userLatitude, userLongitude,  userHeading);
                 }));
                 await asyncForEach(planesInRangeOfUser, async (plane) => {
-                    const planeInfo = await getPlaneInfo(plane.icao24);
-                    if (planeInfo){
-                        plane.airline = planeInfo[0].airline.icaoCode;
-                        plane.aircraft = planeInfo[0].aircraft.icaoCode;
-                        plane.arrival = planeInfo[0].arrival.iataCode;
-                        plane.departure = planeInfo[0].departure.iataCode;
-                        plane.flight = planeInfo[0].flight.icaoNumber
+                    try {
+                        const planeInfo = await getPlaneInfo(plane.icao24);
+                        //console.log(planeInfo)
+                        if (planeInfo.success !== false){
+                            plane.airline = planeInfo[0].airline.icaoCode;
+                            plane.aircraft = planeInfo[0].aircraft.icaoCode;
+                            plane.arrival = planeInfo[0].arrival.iataCode;
+                            plane.departure = planeInfo[0].departure.iataCode;
+                            plane.flight = planeInfo[0].flight.icaoNumber
+                        }
+                    } catch(err) {
+                        return;
                     }
-                })
+                });
+
                 res.status(200).json(planesInRangeOfUser);
             }
         
@@ -167,4 +175,29 @@ const asyncForEach = async(array, callback) => {
     for (let index = 0; index < array.length; index++) {
       await callback(array[index], index, array);
     }
+}
+
+const latLongToMerc = (lat_deg, lon_deg) => {
+    var lon_rad = (lon_deg / 180.0 * Math.PI)
+    var lat_rad = (lat_deg / 180.0 * Math.PI)
+    var sm_a = 6378137.0
+    var xmeters = sm_a * lon_rad
+    var ymeters = sm_a * Math.log((Math.sin(lat_rad) + 1) / Math.cos(lat_rad))
+    return ({ x: xmeters, y: ymeters });
+  }
+
+const transformPointToAR = (objectLat, objectLng, deviceLat, deviceLng, heading) => {
+    var objPoint = latLongToMerc(objectLat, objectLng);
+    var devicePoint = latLongToMerc(deviceLat, deviceLng);
+    // latitude(north,south) maps to the z axis in AR
+    // longitude(east, west) maps to the x axis in AR
+    var objFinalPosZ = objPoint.y - devicePoint.y;
+    var objFinalPosX = objPoint.x - devicePoint.x;
+    //flip the z, as negative z(is in front of us which is north, pos z is behind(south).
+    let angle = heading;
+    const angleRadian = (angle * Math.PI) / 180; // degree to radian
+    let newRotatedX = objFinalPosX * Math.cos(angleRadian) - objFinalPosZ * Math.sin(angleRadian)
+    let newRotatedZ = objFinalPosZ * Math.cos(angleRadian) + objFinalPosX * Math.sin(angleRadian)
+
+    return ({ x: newRotatedX, z: newRotatedZ });
   }
