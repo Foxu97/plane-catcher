@@ -89,7 +89,7 @@ exports.getAllPlanesInRange = (req, res, next) => {
 const findMappedPlaneCoordinates = (userCoords, planeCoords) => {
     const R = 6378.1 //Radius of the Earth
     const bearing = toRadians(calcBearing(userCoords, planeCoords));
-    const distance = 0.008 // distance in km witch i want to draw point
+    const distance = 0.005 // distance in km witch i want to draw point
 
     const lat1 = toRadians(userCoords.latitude);
     const lng1 = toRadians(userCoords.longitude);

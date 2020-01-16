@@ -56,6 +56,7 @@ export default class HelloWorldSceneAR extends Component {
     }
 
     let heading = await Location.getHeadingAsync();
+    this.serverLog(heading.accuracy);
     let location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
     this.setState({ location: location });
     this.setState({ heading: heading.trueHeading });
