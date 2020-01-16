@@ -1,20 +1,4 @@
-
-// IT WILL BE SPLITTED INTO OTHER FILES
-
-//for developing only 
-
-const orzeszeCoords = {
-    latitude: 50.141973,
-    longitude: 18.776457,
-    altitude: 0
-}
-
-const pyrzowiceCoords = {
-    latitude: 50.476052,
-    longitude: 19.084780,
-    altitude: 11000
-}
-//end of for developing only 
+const fetch = require('node-fetch');
 
 var rad = function (x) {
     return x * Math.PI / 180;
@@ -58,39 +42,63 @@ function calcBearing(userCoords, planeCoords){
 // IT WILL BE SPLITTED INTO OTHER FILES
 
 
-exports.getAllPlanesInRange = (req, res, next) => {
+exports.getAllPlanesInRange = async (req, res, next) => {
     const userLatitude = req.query.latitude;
     const userLongitude = req.query.longitude;
     const range = req.query.range;
     if (!req.query.latitude || !req.query.longitude || !req.query.range){
         return res.status(400).send("Invalid query parameters")
     }
+    const c = Math.sqrt(Math.pow(range, 2) + Math.pow(range, 2));
+    const userAreaBoundingBox = getBoundingBoxCoveringUserPosition({latitude: userLatitude, longitude: userLongitude}, c);
+    try {
+        let allPlanes;
+        allPlanes = await fetchPlanesInBoundingBox(userAreaBoundingBox.minBoxPoint, userAreaBoundingBox.maxBoxPoint);
+        if (allPlanes.states) {
+            const mappedPlanes = mapPlanes(allPlanes.states);
+            const planesInRangeOfUser = mappedPlanes.filter(plane => {
+                const distanceToPlane = getDistance({latitude: userLatitude, longitude: userLongitude}, {latitude: plane.latitude, longitude: plane.longitude})
+                return (distanceToPlane/1000 <= range)
+            });
+            if (planesInRangeOfUser) {
+                planesInRangeOfUser.forEach((plane => { 
+                    let mappedARCoords = findMappedCoordinates({ latitude: userLatitude, longitude: userLongitude}, {latitude: plane.latitude, longitude: plane.longitude});
+                    plane.arLatitude = mappedARCoords.latitude;
+                    plane.arLongitude = mappedARCoords.longitude;
+                }));
+                await asyncForEach(planesInRangeOfUser, async (plane) => {
+                    const planeInfo = await getPlaneInfo(plane.icao24);
+                    if (planeInfo){
+                        plane.airline = planeInfo[0].airline.icaoCode;
+                        plane.aircraft = planeInfo[0].aircraft.icaoCode;
+                        plane.arrival = planeInfo[0].arrival.iataCode;
+                        plane.departure = planeInfo[0].departure.iataCode;
+                        plane.flight = planeInfo[0].flight.icaoNumber
+                    }
+                })
+                res.status(200).json(planesInRangeOfUser);
+            }
+        
+
+        }
+        else {
+            res.status(404).json({message: "No planes in given range!"});
+        }
     
-    const allPlanes = require('../models/dummyPlanesData'); // simulation of getting data from db
-
-    const planesInRangeOfUser = allPlanes.filter(plane => {
-        const distanceToPlane = getDistance({latitude: userLatitude, longitude: userLongitude}, {latitude: plane.latitude, longitude: plane.longitude})
-        return (distanceToPlane/1000 <= range)
-    });
-
-    planesInRangeOfUser.forEach((plane => {
-        let mappedARCoords = findMappedPlaneCoordinates({ latitude: userLatitude, longitude: userLongitude}, {latitude: plane.latitude, longitude: plane.longitude});
-        plane.arLatitude = mappedARCoords.latitude;
-        plane.arLongitude = mappedARCoords.longitude;
-    }));
-
-    //const distanceInMeters = getDistance(userCoords, planeCoords);
-    //const bearing = calcBearing(userCoords, planeCoords);
-    //const angle = toDegrees(Math.atan(pyrzowiceCoords.altitude / distanceInMeters));
-
-    res.status(200).json(planesInRangeOfUser);
+    }
+    catch (err) {
+        console.log(err);
+        res.status(500).json({message: "Something went wrong!"});
+    }
 }
 
-const findMappedPlaneCoordinates = (userCoords, planeCoords) => {
+const findMappedCoordinates = (userCoords, planeCoords, bearing, distance = 0.005) => {
     const R = 6378.1 //Radius of the Earth
-    const bearing = toRadians(calcBearing(userCoords, planeCoords));
-    const distance = 0.005 // distance in km witch i want to draw point
+    if (!bearing) {
+        bearing = calcBearing(userCoords, planeCoords);
+    }
 
+    bearing = toRadians(bearing);
     const lat1 = toRadians(userCoords.latitude);
     const lng1 = toRadians(userCoords.longitude);
 
@@ -106,3 +114,57 @@ const findMappedPlaneCoordinates = (userCoords, planeCoords) => {
     return {latitude: lat2, longitude: lng2}
 
 }
+
+const getBoundingBoxCoveringUserPosition = (userCoords, rangeInKm) => {
+    const maxBoxPoint = findMappedCoordinates(userCoords, null, 45, rangeInKm);
+    const minBoxPoint = findMappedCoordinates(userCoords, null, 225, rangeInKm);
+    return {
+        maxBoxPoint: maxBoxPoint,
+        minBoxPoint: minBoxPoint
+    }
+}
+
+const fetchPlanesInBoundingBox = async (minBoxPoint, maxBoxPoint) => {
+    return fetch(`https://opensky-network.org/api/states/all?lamin=${minBoxPoint.latitude}&lomin=${minBoxPoint.longitude}&lamax=${maxBoxPoint.latitude}&lomax=${maxBoxPoint.longitude}`).then(
+        res => {
+            return res.json();
+        }
+    );
+}
+const getPlaneInfo = async(icao24) => {
+    
+    return fetch(`http://aviation-edge.com/v2/public/flights?key=008a4c-e9f4d4&aircraftIcao24=${icao24}`).then(
+        res => {
+            return res.json();
+        }
+    );
+}
+
+const mapPlanes = (planes) => {
+    if (planes) {
+        const mappedPlanes = [];
+        planes.forEach(singlePlaneInfoArray => {
+            let newPlane;
+            for (let i = 0; i<singlePlaneInfoArray.length; i++) {
+                newPlane = {
+                    icao24: singlePlaneInfoArray[0],
+                    callsign: singlePlaneInfoArray[1],
+                    timePosition: singlePlaneInfoArray[3],
+                    longitude: singlePlaneInfoArray[5],
+                    latitude: singlePlaneInfoArray[6],
+                    velocity: singlePlaneInfoArray[9],
+                    trueTrack: singlePlaneInfoArray[10],
+                    altitude: singlePlaneInfoArray[13]
+                }
+            }
+            mappedPlanes.push(newPlane);
+        });
+        return mappedPlanes;
+    }
+}
+
+const asyncForEach = async(array, callback) => {
+    for (let index = 0; index < array.length; index++) {
+      await callback(array[index], index, array);
+    }
+  }
