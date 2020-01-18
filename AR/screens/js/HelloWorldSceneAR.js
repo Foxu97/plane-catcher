@@ -10,8 +10,8 @@ import {
   ViroConstants
 } from 'react-viro';
 
-import * as Location from 'expo-location';
-import * as Permissions from 'expo-permissions';
+// import * as Location from 'expo-location';
+// import * as Permissions from 'expo-permissions';
 
 export default class HelloWorldSceneAR extends Component {
 
@@ -47,21 +47,21 @@ export default class HelloWorldSceneAR extends Component {
     this.serverLog = this.serverLog.bind(this);
   }
 
-  _getLocationAsync = async () => {
-    let { status } = await Permissions.askAsync(Permissions.LOCATION);
-    if (status !== 'granted') {
-      this.setState({
-        errorMessage: 'Permission to access location was denied',
-      });
-    }
+  // _getLocationAsync = async () => {
+  //   let { status } = await Permissions.askAsync(Permissions.LOCATION);
+  //   if (status !== 'granted') {
+  //     this.setState({
+  //       errorMessage: 'Permission to access location was denied',
+  //     });
+  //   }
 
-    let heading = await Location.getHeadingAsync();
-    this.serverLog(heading.accuracy);
-    let location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
-    this.setState({ location: location });
-    this.setState({ heading: heading.trueHeading });
+  //   let heading = await Location.getHeadingAsync();
+  //   this.serverLog(heading.accuracy);
+  //   let location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+  //   this.setState({ location: location });
+  //   this.setState({ heading: heading.trueHeading });
 
-  };
+  // };
 
 
   render() {

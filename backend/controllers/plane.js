@@ -42,7 +42,7 @@ exports.getAllPlanesInRange = async (req, res, next) => {
     const userLongitude = req.query.longitude;
     const range = req.query.range;
     const userHeading = req.query.heading;
-    if (!req.query.latitude || !req.query.longitude || !req.query.range){
+    if (!req.query.latitude || !req.query.longitude || !req.query.range || !req.query.heading){
         return res.status(400).send("Invalid query parameters")
     }
     const c = Math.sqrt(Math.pow(range, 2) + Math.pow(range, 2));
@@ -74,10 +74,10 @@ exports.getAllPlanesInRange = async (req, res, next) => {
                             plane.flight = planeInfo[0].flight.icaoNumber
                         }
                     } catch(err) {
-                        return;
+                        console.log(err)
                     }
                 });
-
+                // console.log(planesInRangeOfUser)
                 res.status(200).json(planesInRangeOfUser);
             }
         }

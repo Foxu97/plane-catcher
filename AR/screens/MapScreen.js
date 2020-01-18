@@ -2,23 +2,33 @@ import React, { useState, useEffect } from 'react';
 import { HeaderButtons, Item } from 'react-navigation-header-buttons';
 import MapView from 'react-native-maps';
 import { Marker } from 'react-native-maps';
-import * as Permissions from 'expo-permissions';
-import { View, Text, Button, StyleSheet, Dimensions, Alert, Platform } from 'react-native';
-import * as Location from 'expo-location';
+import { View, StyleSheet, Dimensions } from 'react-native';
 
 import Colors from '../constants/Colors';
 import manMarker from '../assets/standing-up-man-.png';
 import planeMarker from '../assets/plane.png';
+import { ActivityIndicator } from 'react-native';
 //import CustomHeaderButton from '../components/CustomHeaderButton';
 
+import { useSelector, useDispatch } from 'react-redux';
+
+const serverlog = (message) => {
+    fetch('http://192.168.74.254:8080/debug/consolelog', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message: message
+      }),
+    });
+  }
+
 const MapScreen = props => {
-    const [userLocation, setUserLocation] = useState();
-    const [hasLocationPermission, setHasLocationPermission] = useState(false);
-    const [watchId, setWatchID] = useState();
-
-
-    const [planes, setPlanes] = useState();
-
+    const planes = useSelector(state => state.planes.planes);
+    const userLat = useSelector(state => state.planes.latitude);
+    const userLng = useSelector(state => state.planes.longitude);
     const setRegion = (lat, lng) => ({
         latitude: lat,
         longitude: lng,
@@ -26,86 +36,30 @@ const MapScreen = props => {
         longitudeDelta: 0.0421
     });
 
-    let locationResult
-
-    const verifyPermissions = async () => {
-        try {
-            const result = await Permissions.askAsync(Permissions.LOCATION);
-            if (result.status !== 'granted') {
-                Alert.alert('Insufficient permissions!', [{ text: 'OK!' }]);
-            } else {
-                setHasLocationPermission(true);
-                console.log("Permission for LOCATION granted");
-                locationResult = await Location.watchPositionAsync({accuracy:Location.Accuracy.High}, (newUserLocation) => {
-                    setUserLocation({
-                        latitude: newUserLocation.coords.latitude,
-                        longitude: newUserLocation.coords.longitude
-                });
-                    getPlanesFromAPI(newUserLocation.coords.latitude, newUserLocation.coords.longitude, 50);
-                });
-            }
-        } catch (err) {
-            console.log(err)
-        }
-
-    }
-
-    const getPlanesFromAPI = async (userLatitude, userLongitude, range) => {
-        fetch(`http://192.168.74.254:8080/plane?latitude=${userLatitude.toString()}&longitude=${userLongitude.toString()}&range=50&heading=0`).then(res => {
-            return res.json()
-        }).then(data => {
-            setPlanes(data);
-            //serverLog(data)
-        })
-    }
-    const serverLog = (message) => {
-        fetch('http://192.168.74.254:8080/debug/consolelog', {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            message: message
-          }),
-        });
-      }
-    useEffect(() => {
-        verifyPermissions();
-        
-        return () => {
-            locationResult.remove();
-        }
-    }, []);
-
     return (
         <View style={styles.container}>
             {
-                userLocation && hasLocationPermission ?
+                userLat && userLng ?
                     <MapView region={{
-                        latitude: userLocation.latitude,
-                        longitude: userLocation.longitude,
+                        latitude: userLat,
+                        longitude: userLng,
                         latitudeDelta: 0.0922,
                         longitudeDelta: 0.0421
                     }} style={styles.mapStyle} >
 
                         <MapView.Marker
-                            coordinate={setRegion(userLocation.latitude, userLocation.longitude)}
+                            coordinate={setRegion(userLat, userLng)}
                             image={manMarker}
                         />
                         {planes ? planes.map((plane => {
                             return <MapView.Marker
                             coordinate={setRegion(plane.latitude, plane.longitude)}
                             image={planeMarker}
-                            key={plane.latitude} //temporary solution
+                            key={plane.icao24}
                         />
                         })) : null}
                     </MapView>
-                    :
-                    <View>
-                        <Text>We need your location permission granted</Text>
-                        <Button title="Grant GPS Permission" onPress={verifyPermissions}/>
-                    </View>
+                    : <ActivityIndicator/>
             }
         </View>
     );
