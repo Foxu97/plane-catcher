@@ -54,6 +54,7 @@ const MapScreen = props => {
                         {planes ? planes.map((plane => {
                             return <MapView.Marker
                             coordinate={setRegion(plane.latitude, plane.longitude)}
+                            rotation={plane.trueTrack}
                             image={planeMarker}
                             key={plane.icao24}
                         />
