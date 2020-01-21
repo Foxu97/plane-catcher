@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { HeaderButtons, Item } from 'react-navigation-header-buttons';
 import MapView from 'react-native-maps';
-import { Marker } from 'react-native-maps';
+import { Marker, Callout } from 'react-native-maps';
 import { View, StyleSheet, Dimensions } from 'react-native';
 
 import Colors from '../constants/Colors';
 import manMarker from '../assets/standing-up-man-.png';
 import planeMarker from '../assets/plane.png';
 import { ActivityIndicator } from 'react-native';
-import * as planesActions from '../store/planes/planes-actions';
 import * as API from '../api';
-//import CustomHeaderButton from '../components/CustomHeaderButton';
+import PlaneInfo from '../components/PlaneInfo';
+import CustomHeaderButton from '../components/CustomHeaderButton';
 
 import { useSelector, useDispatch } from 'react-redux';
 
@@ -33,6 +33,8 @@ const MapScreen = props => {
     const [lngDelta, setLngDelta] = useState(0.0421);
     const userLat = useSelector(state => state.planes.latitude);
     const userLng = useSelector(state => state.planes.longitude);
+    const [mapLat, setMapLat] = useState(userLat);
+    const [mapLng, setMapLng] = useState(userLng);
     const setRegion = (lat, lng) => ({
         latitude: lat,
         longitude: lng,
@@ -51,6 +53,8 @@ const MapScreen = props => {
     }, []);
 
     const onRegionChangeHandler = (region) => {
+        setMapLat(region.latitude)
+        setMapLng(region.longitude)
         setLatDelta(region.latitudeDelta);
         setLngDelta(region.longitudeDelta);
     }
@@ -60,11 +64,11 @@ const MapScreen = props => {
             {
                 useMemo(() => (
                     userLat && userLng ?
-                        <MapView
+                        (<MapView
                             onRegionChange={(reg) => onRegionChangeHandler(reg)}
                             region={{
-                                latitude: userLat,
-                                longitude: userLng,
+                                latitude: mapLat,
+                                longitude: mapLng,
                                 latitudeDelta: latDelta,
                                 longitudeDelta: lngDelta
                             }} style={styles.mapStyle} >
@@ -74,16 +78,28 @@ const MapScreen = props => {
                                 image={manMarker}
                             />
                             {planes ? planes.map((plane => {
-                                return <MapView.Marker
+                                return (<MapView.Marker
                                     coordinate={setRegion(plane.latitude, plane.longitude)}
                                     rotation={plane.trueTrack}
                                     image={planeMarker}
                                     key={plane.icao24}
-                                />
+
+                                >
+                                    <Callout>
+                                        <PlaneInfo
+                                            departure={plane.departure}
+                                            aircraft={plane.aircraft}
+                                            flight={plane.flight}
+                                            arrival={plane.arrival}
+                                            airline={plane.airline}
+                                        />
+                                    </Callout>
+                                </MapView.Marker>)
                             })) : null}
-                        </MapView> : <ActivityIndicator/>
+                        </MapView>) : <ActivityIndicator />
                 ), [planes])
             }
+
         </View>
     );
 };
@@ -103,17 +119,17 @@ const styles = StyleSheet.create({
 
 MapScreen.navigationOptions = navData => {
     return {
-        headerTitle: 'Map'
-        // headerRight: <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
-        //     <Item
-        //         title="Add Place"
-        //         iconName='md-camera'
-        //         onPress={() => {
-        //             navData.navigation.navigate('AR');
-        //         }}
-        //     />
+        headerTitle: 'Map',
+        headerRight: <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
+            <Item
+                title="Save to file"
+                iconName='md-save'
+                onPress={() => {
+                    console.log('save to file');
+                }}
+            />
 
-        // </HeaderButtons>
+        </HeaderButtons>
     }
 }
 
