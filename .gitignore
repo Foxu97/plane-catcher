@@ -1,3 +1,13 @@
 **/node_modules/**
 backend/.env
 **/build/**
+backend/socket.js
+AR/android/.gradle/buildOutputCleanup/buildOutputCleanup.lock
+AR/android/.gradle/4.10.1/taskHistory/taskHistory.lock
+AR/android/.gradle/4.10.1/taskHistory/taskHistory.bin
+AR/android/.gradle/4.10.1/javaCompile/taskHistory.bin
+AR/android/.gradle/4.10.1/javaCompile/javaCompile.lock
+AR/android/.gradle/4.10.1/javaCompile/jarAnalysis.bin
+AR/android/.gradle/4.10.1/fileHashes/resourceHashesCache.bin
+AR/android/.gradle/4.10.1/fileHashes/fileHashes.lock
+AR/android/.gradle/4.10.1/fileHashes/fileHashes.bin
