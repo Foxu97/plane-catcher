@@ -6,10 +6,26 @@ import * as Location from 'expo-location';
 import { useDispatch } from 'react-redux';
 import * as planeActions from '../store/planes/planes-actions';
 
+import * as API from '../api';
+
 
 import { ActivityIndicator } from 'react-native-paper';
 
+const serverlog = (message) => {
+    fetch('http://192.168.74.254:8080/debug/consolelog', {
+        method: 'POST',
+        headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            message: message
+        }),
+    });
+}
+
 const DataProvider = props => {
+    serverlog("Data provider init")
     const dispatch = useDispatch();
     const [planesFetched, setPlanesFetched] = useState(false);
 
@@ -22,19 +38,6 @@ const DataProvider = props => {
     }, [dispatch])
 
 
-    const serverlog = (message) => {
-        fetch('http://192.168.74.254:8080/debug/consolelog', {
-            method: 'POST',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                message: message
-            }),
-        });
-    }
-
     const verifyPermissions = async () => {
         return new Promise(async (resolve, reject) => {
             try {
@@ -46,7 +49,8 @@ const DataProvider = props => {
                     await serverlog("location permissions granted");
                     const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High }); // watch position should be better
                     const headingRes = await Location.getHeadingAsync();
-                    await fetchPlanes(location.coords.latitude, location.coords.longitude, 50, headingRes.trueHeading);
+                    await fetchPlanes(location.coords.latitude, location.coords.longitude, 300, headingRes.trueHeading);
+                    API.getPlanes(location.coords.latitude, location.coords.longitude, 300, headingRes.trueHeading);
                     resolve();
                 }
             } catch (err) {

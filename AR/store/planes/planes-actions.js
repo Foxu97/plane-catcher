@@ -6,7 +6,7 @@ export const FETCH_PLANES = "FETCH_PLANES";
 export const fetchPlanes = (userLatitude, userLongitude, range, heading) => {
     return async dispatch => {
         try {
-            const response = await fetch(`http://192.168.74.254:8080/plane?latitude=${userLatitude.toString()}&longitude=${userLongitude.toString()}&range=150&heading=${heading}`);
+            const response = await fetch(`http://192.168.74.254:8080/plane?latitude=${userLatitude.toString()}&longitude=${userLongitude.toString()}&range=${range}&heading=${heading}`);
             const resData = await response.json();
             dispatch({ type: SET_PLANES, planes: resData });
             dispatch({ type: SET_DEVICE_HEADING, heading: heading });
@@ -17,3 +17,5 @@ export const fetchPlanes = (userLatitude, userLongitude, range, heading) => {
         }
     }
 }
+
+

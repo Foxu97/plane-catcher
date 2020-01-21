@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { HeaderButtons, Item } from 'react-navigation-header-buttons';
 import MapView from 'react-native-maps';
 import { Marker } from 'react-native-maps';
@@ -8,25 +8,29 @@ import Colors from '../constants/Colors';
 import manMarker from '../assets/standing-up-man-.png';
 import planeMarker from '../assets/plane.png';
 import { ActivityIndicator } from 'react-native';
+import * as planesActions from '../store/planes/planes-actions';
+import * as API from '../api';
 //import CustomHeaderButton from '../components/CustomHeaderButton';
 
 import { useSelector, useDispatch } from 'react-redux';
 
 const serverlog = (message) => {
     fetch('http://192.168.74.254:8080/debug/consolelog', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        message: message
-      }),
+        method: 'POST',
+        headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            message: message
+        }),
     });
-  }
+}
 
 const MapScreen = props => {
-    const planes = useSelector(state => state.planes.planes);
+    const [planes, setPlanes] = useState();
+    const [latDelta, setLatDelta] = useState(0.0922);
+    const [lngDelta, setLngDelta] = useState(0.0421);
     const userLat = useSelector(state => state.planes.latitude);
     const userLng = useSelector(state => state.planes.longitude);
     const setRegion = (lat, lng) => ({
@@ -36,31 +40,49 @@ const MapScreen = props => {
         longitudeDelta: 0.0421
     });
 
+    useEffect(() => {
+        API.planesSubject.subscribe(value => {
+            setPlanes(value)
+        });
+
+        return () => {
+            API.planesSubject.unsubscribe();
+        }
+    }, []);
+
+    const onRegionChangeHandler = (region) => {
+        setLatDelta(region.latitudeDelta);
+        setLngDelta(region.longitudeDelta);
+    }
+
     return (
         <View style={styles.container}>
             {
-                userLat && userLng ?
-                    <MapView region={{
-                        latitude: userLat,
-                        longitude: userLng,
-                        latitudeDelta: 0.0922,
-                        longitudeDelta: 0.0421
-                    }} style={styles.mapStyle} >
+                useMemo(() => (
+                    userLat && userLng ?
+                        <MapView
+                            onRegionChange={(reg) => onRegionChangeHandler(reg)}
+                            region={{
+                                latitude: userLat,
+                                longitude: userLng,
+                                latitudeDelta: latDelta,
+                                longitudeDelta: lngDelta
+                            }} style={styles.mapStyle} >
 
-                        <MapView.Marker
-                            coordinate={setRegion(userLat, userLng)}
-                            image={manMarker}
-                        />
-                        {planes ? planes.map((plane => {
-                            return <MapView.Marker
-                            coordinate={setRegion(plane.latitude, plane.longitude)}
-                            rotation={plane.trueTrack}
-                            image={planeMarker}
-                            key={plane.icao24}
-                        />
-                        })) : null}
-                    </MapView>
-                    : <ActivityIndicator/>
+                            <MapView.Marker
+                                coordinate={setRegion(userLat, userLng)}
+                                image={manMarker}
+                            />
+                            {planes ? planes.map((plane => {
+                                return <MapView.Marker
+                                    coordinate={setRegion(plane.latitude, plane.longitude)}
+                                    rotation={plane.trueTrack}
+                                    image={planeMarker}
+                                    key={plane.icao24}
+                                />
+                            })) : null}
+                        </MapView> : <ActivityIndicator/>
+                ), [planes])
             }
         </View>
     );
