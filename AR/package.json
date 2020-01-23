@@ -6,7 +6,7 @@
     "web": "expo start --web",
     "start": "react-native start",
     "test": "jest",
-    "ins": "cd android && gradlew.bat installGvrDebug && npm start"
+    "ins": "cd android && gradlew.bat installGvrDebug && adb reverse tcp:8081 tcp:8081 && npm start"
   },
   "dependencies": {
     "expo": "~36.0.0",

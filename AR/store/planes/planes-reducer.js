@@ -31,9 +31,15 @@ export default (state = initialState, action) => {
                 return plane.icao24 === action.plane.icao24;
             });
             if (!wasPlaneAlreadyObserved) {
+                const observedPlaneData = {
+                    icao24: action.plane.icao24,
+                    callsign: action.plane.callsign,
+                    velocity: action.plane.velocity,
+                    altitude: action.plane.altitude
+                }
                 return {
                     ...state,
-                    observationHistory: state.observationHistory.concat(action.plane)
+                    observationHistory: state.observationHistory.concat(observedPlaneData)
                 }
             }
             return {

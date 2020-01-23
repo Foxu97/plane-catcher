@@ -54,7 +54,9 @@ exports.getAllPlanesInRange = async (req, res, next) => {
             const mappedPlanes = mapPlanes(allPlanes.states);
             const planesInRangeOfUser = mappedPlanes.filter(plane => {
                 const distanceToPlane = getDistance({latitude: userLatitude, longitude: userLongitude}, {latitude: plane.latitude, longitude: plane.longitude})
-                return (distanceToPlane/1000 <= range)
+                plane.distanceToPlane = distanceToPlane;
+                plane.angleBetweenUserAndPlane = toDegrees(Math.atan(plane.altitude / distanceToPlane));
+                return (distanceToPlane/1000 <= range);
             });
             if (planesInRangeOfUser) {
                 planesInRangeOfUser.forEach((plane => { 
@@ -62,6 +64,7 @@ exports.getAllPlanesInRange = async (req, res, next) => {
                     plane.arLatitude = mappedARCoords.latitude;
                     plane.arLongitude = mappedARCoords.longitude;
                     plane.arPoint = transformPointToAR(plane.arLatitude, plane.arLongitude, userLatitude, userLongitude,  userHeading);
+                    plane.arPoint.y = toDegrees(Math.atan(plane.altitude / plane.distanceToPlane)) / 10
                 }));
                 // await asyncForEach(planesInRangeOfUser, async (plane) => {
                 //     try {

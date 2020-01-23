@@ -19,6 +19,20 @@ export const fetchPlanes = (userLatitude, userLongitude, range, heading) => {
     }
 }
 
+export const setLocation = (userLatitude, userLongitude) => {
+    return {
+        type: SET_USER_LOCATION,
+        userLocation: {latitude: userLatitude, longitude: userLongitude}
+    }
+}
+
+export const setHeading = (heading) => {
+    return {
+        type: SET_DEVICE_HEADING,
+        heading: heading
+    }
+}
+
 export const addPlaneToHistory = (plane) => {
     return {
         type: ADD_PLANE_TO_HISTORY, plane: plane

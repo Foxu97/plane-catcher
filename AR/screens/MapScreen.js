@@ -39,6 +39,7 @@ const MapScreen = props => {
     const [lngDelta, setLngDelta] = useState(0.0421);
     const userLat = useSelector(state => state.planes.latitude);
     const userLng = useSelector(state => state.planes.longitude);
+    serverlog(userLat);
     const [mapLat, setMapLat] = useState(userLat);
     const [mapLng, setMapLng] = useState(userLng);
     const store = useStore();
