@@ -3,6 +3,8 @@ import { HeaderButtons, Item } from 'react-navigation-header-buttons';
 import MapView from 'react-native-maps';
 import { Marker, Callout } from 'react-native-maps';
 import { View, StyleSheet, Dimensions } from 'react-native';
+import { useSelector, useDispatch, useStore } from 'react-redux';
+
 
 import Colors from '../constants/Colors';
 import manMarker from '../assets/standing-up-man-.png';
@@ -11,8 +13,9 @@ import { ActivityIndicator } from 'react-native';
 import * as API from '../api';
 import PlaneInfo from '../components/PlaneInfo';
 import CustomHeaderButton from '../components/CustomHeaderButton';
+import * as planesActions from '../store/planes/planes-actions';
+import * as RNFS from 'react-native-fs';
 
-import { useSelector, useDispatch } from 'react-redux';
 
 const serverlog = (message) => {
     fetch('http://192.168.74.254:8080/debug/consolelog', {
@@ -28,6 +31,7 @@ const serverlog = (message) => {
 }
 
 const MapScreen = props => {
+    const dispatch = useDispatch();
     const [planes, setPlanes] = useState();
     const [latDelta, setLatDelta] = useState(0.0922);
     const [lngDelta, setLngDelta] = useState(0.0421);
@@ -35,6 +39,8 @@ const MapScreen = props => {
     const userLng = useSelector(state => state.planes.longitude);
     const [mapLat, setMapLat] = useState(userLat);
     const [mapLng, setMapLng] = useState(userLng);
+    const store = useStore();
+
     const setRegion = (lat, lng) => ({
         latitude: lat,
         longitude: lng,
@@ -43,13 +49,14 @@ const MapScreen = props => {
     });
 
     useEffect(() => {
-        API.planesSubject.subscribe(value => {
+        const planesSubscription = API.getPlaneSubject();
+        planesSubscription.subscribe(value => {
             setPlanes(value)
         });
 
-        return () => {
-            API.planesSubject.unsubscribe();
-        }
+        // return () => {
+        //     API.planesSubject.unsubscribe();
+        // }
     }, []);
 
     const onRegionChangeHandler = (region) => {
@@ -57,6 +64,21 @@ const MapScreen = props => {
         setMapLng(region.longitude)
         setLatDelta(region.latitudeDelta);
         setLngDelta(region.longitudeDelta);
+    }
+    const onPlaneTapHandler = (plane) => {
+        dispatch(planesActions.addPlaneToHistory(plane));
+        const state = store.getState();
+        props.navigation.setParams({observationHistory: state.planes.observationHistory});
+        exportObservationHistoryFile()
+    }
+    const exportObservationHistoryFile = () => {
+        RNFS.readDir(RNFS.DocumentDirectoryPath).then(files => {
+            serverlog(RNFS.DocumentDirectoryPath)
+            serverlog(files)
+        }).catch(err => {
+            serverlog(err.message)
+            serverlog(err.code)
+        })
     }
 
     return (
@@ -83,15 +105,14 @@ const MapScreen = props => {
                                     rotation={plane.trueTrack}
                                     image={planeMarker}
                                     key={plane.icao24}
-
+                                    onPress={(e) => {e.stopPropagation(); onPlaneTapHandler(plane)}}
                                 >
                                     <Callout>
                                         <PlaneInfo
-                                            departure={plane.departure}
-                                            aircraft={plane.aircraft}
-                                            flight={plane.flight}
-                                            arrival={plane.arrival}
-                                            airline={plane.airline}
+                                            icao24={plane.icao24}
+                                            callsign={plane.callsign}
+                                            velocity={plane.velocity ? (plane.velocity * 60 * 60 / 1000).toFixed() : "N/A"}
+                                            altitude={plane.altitude ? plane.altitude.toFixed() : "N/A"}
                                         />
                                     </Callout>
                                 </MapView.Marker>)
@@ -118,6 +139,7 @@ const styles = StyleSheet.create({
 });
 
 MapScreen.navigationOptions = navData => {
+    const observationHistory = navData.navigation.getParam('observationHistory');
     return {
         headerTitle: 'Map',
         headerRight: <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
@@ -125,7 +147,7 @@ MapScreen.navigationOptions = navData => {
                 title="Save to file"
                 iconName='md-save'
                 onPress={() => {
-                    console.log('save to file');
+                    serverlog(observationHistory)
                 }}
             />
 

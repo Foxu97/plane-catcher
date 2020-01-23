@@ -1,15 +1,16 @@
-import { SET_PLANES, SET_DEVICE_HEADING, SET_USER_LOCATION } from './planes-actions';
+import { SET_PLANES, SET_DEVICE_HEADING, SET_USER_LOCATION, ADD_PLANE_TO_HISTORY } from './planes-actions';
 
 const initialState = {
     planes: [],
     longitude: null,
     latitude: null,
-    heading: null
+    heading: null,
+    observationHistory: []
 }
 
 export default (state = initialState, action) => {
-    switch(action.type) {
-        case SET_PLANES: 
+    switch (action.type) {
+        case SET_PLANES:
             return {
                 ...state,
                 planes: [...action.planes]
@@ -25,7 +26,22 @@ export default (state = initialState, action) => {
                 ...state,
                 heading: action.heading
             }
+        case ADD_PLANE_TO_HISTORY:
+            const wasPlaneAlreadyObserved = state.observationHistory.find((plane) => {
+                return plane.icao24 === action.plane.icao24;
+            });
+            if (!wasPlaneAlreadyObserved) {
+                return {
+                    ...state,
+                    observationHistory: state.observationHistory.concat(action.plane)
+                }
+            }
+            return {
+                ...state
+            }
+
     }
+
     return state;
 }
 

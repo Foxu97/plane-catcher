@@ -2,7 +2,7 @@ import { BehaviorSubject } from 'rxjs'
 
 const BASE_URL = "http://192.168.74.254:8080/"
 
-export const planesSubject = new BehaviorSubject([]);
+const planesSubject = new BehaviorSubject([]);
 const userLocationSubject = new BehaviorSubject([]);
 const deviceHeadingSubject = new BehaviorSubject([]);
 
@@ -16,4 +16,8 @@ export const getPlanes = async (userLatitude, userLongitude, range, heading) => 
             console.log(err)
         }
     }, 5000)
+}
+
+export const getPlaneSubject = () => {
+    return planesSubject.asObservable();
 }

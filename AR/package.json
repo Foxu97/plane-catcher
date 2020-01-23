@@ -5,7 +5,8 @@
     "ios": "react-native run-ios",
     "web": "expo start --web",
     "start": "react-native start",
-    "test": "jest"
+    "test": "jest",
+    "ins": "cd android && gradlew.bat installGvrDebug && npm start"
   },
   "dependencies": {
     "expo": "~36.0.0",
@@ -14,11 +15,12 @@
     "react": "~16.8.3",
     "react-dom": "~16.8.3",
     "react-native": "~0.59.3",
-    "react-native-gesture-handler": "~1.5.0",
     "react-native-maps": "^0.26.1",
+    "react-native-gesture-handler": "~1.5.0",
     "react-native-paper": "^3.3.0",
     "react-native-reanimated": "~1.4.0",
     "react-native-screens": "~2.0.0-alpha.12",
+    "react-native-fs": "2.16.2",
     "react-native-unimodules": "~0.7.0",
     "react-native-vector-icons": "^6.6.0",
     "react-native-web": "~0.11.7",

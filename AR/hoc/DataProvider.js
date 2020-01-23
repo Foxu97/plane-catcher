@@ -41,7 +41,7 @@ const DataProvider = props => {
     const verifyPermissions = async () => {
         return new Promise(async (resolve, reject) => {
             try {
-                const result = await Permissions.askAsync(Permissions.LOCATION);
+                const result = await Permissions.askAsync(Permissions.LOCATION, Permissions.CAMERA_ROLL, Permissions.CAMERA);
                 if (result.status !== 'granted') {
                     Alert.alert('Insufficient permissions!', [{ text: 'OK!' }]);
                     await serverlog("No location permissions!");

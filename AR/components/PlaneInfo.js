@@ -2,17 +2,12 @@ import React, {useEffect} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 
 const PlaneInfo = props => {
-    useEffect(() => {
-        console.log(props)
-    })
-
     return (
         <View style={styles.container}>
-                <Text style={styles.textStyle}>Flight: {props.flight}</Text>
-                <Text style={styles.textStyle}>From: {props.departure}</Text>
-                <Text style={styles.textStyle}>To: {props.arrival}</Text>
-                <Text style={styles.textStyle}>Aircraft: {props.aircraft}</Text>
-                <Text style={styles.textStyle}>Airline: {props.airline}</Text>
+                <Text style={styles.textStyle}>icao24: {props.icao24}</Text>
+                <Text style={styles.textStyle}>Callsign: {props.callsign}</Text>
+                <Text style={styles.textStyle}>Velocity: {props.velocity}km/h</Text>
+                <Text style={styles.textStyle}>Altitude: {props.altitude}m</Text>
         </View>
     )
 }

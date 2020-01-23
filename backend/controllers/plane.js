@@ -63,20 +63,20 @@ exports.getAllPlanesInRange = async (req, res, next) => {
                     plane.arLongitude = mappedARCoords.longitude;
                     plane.arPoint = transformPointToAR(plane.arLatitude, plane.arLongitude, userLatitude, userLongitude,  userHeading);
                 }));
-                await asyncForEach(planesInRangeOfUser, async (plane) => {
-                    try {
-                        const planeInfo = await getPlaneInfo(plane.icao24);
-                        if (planeInfo.success !== false){
-                            plane.airline = planeInfo[0].airline.icaoCode;
-                            plane.aircraft = planeInfo[0].aircraft.icaoCode;
-                            plane.arrival = planeInfo[0].arrival.iataCode;
-                            plane.departure = planeInfo[0].departure.iataCode;
-                            plane.flight = planeInfo[0].flight.icaoNumber
-                        }
-                    } catch(err) {
-                        console.log(err)
-                    }
-                });
+                // await asyncForEach(planesInRangeOfUser, async (plane) => {
+                //     try {
+                //         const planeInfo = await getPlaneInfo(plane.icao24);
+                //         if (planeInfo.success !== false){
+                //             plane.airline = planeInfo[0].airline.icaoCode;
+                //             plane.aircraft = planeInfo[0].aircraft.icaoCode;
+                //             plane.arrival = planeInfo[0].arrival.iataCode;
+                //             plane.departure = planeInfo[0].departure.iataCode;
+                //             plane.flight = planeInfo[0].flight.icaoNumber
+                //         }
+                //     } catch(err) {
+                //         console.log(err)
+                //     }
+                // });
                 // console.log(planesInRangeOfUser)
                 res.status(200).json(planesInRangeOfUser);
             }
