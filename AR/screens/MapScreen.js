@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { HeaderButtons, Item } from 'react-navigation-header-buttons';
 import MapView from 'react-native-maps';
 import { Marker, Callout } from 'react-native-maps';
-import { View, StyleSheet, Dimensions } from 'react-native';
+import { View, StyleSheet, Dimensions, ToastAndroid } from 'react-native';
 import { useSelector, useDispatch, useStore } from 'react-redux';
 
 
@@ -14,8 +14,10 @@ import * as API from '../api';
 import PlaneInfo from '../components/PlaneInfo';
 import CustomHeaderButton from '../components/CustomHeaderButton';
 import * as planesActions from '../store/planes/planes-actions';
-import * as RNFS from 'react-native-fs';
 
+import * as MediaLibrary from 'expo-media-library';
+import * as FileSystem from 'expo-file-system';
+import * as Permissions from 'expo-permissions';
 
 const serverlog = (message) => {
     fetch('http://192.168.74.254:8080/debug/consolelog', {
@@ -69,16 +71,6 @@ const MapScreen = props => {
         dispatch(planesActions.addPlaneToHistory(plane));
         const state = store.getState();
         props.navigation.setParams({observationHistory: state.planes.observationHistory});
-        exportObservationHistoryFile()
-    }
-    const exportObservationHistoryFile = () => {
-        RNFS.readDir(RNFS.DocumentDirectoryPath).then(files => {
-            serverlog(RNFS.DocumentDirectoryPath)
-            serverlog(files)
-        }).catch(err => {
-            serverlog(err.message)
-            serverlog(err.code)
-        })
     }
 
     return (
@@ -111,8 +103,8 @@ const MapScreen = props => {
                                         <PlaneInfo
                                             icao24={plane.icao24}
                                             callsign={plane.callsign}
-                                            velocity={plane.velocity ? (plane.velocity * 60 * 60 / 1000).toFixed() : "N/A"}
-                                            altitude={plane.altitude ? plane.altitude.toFixed() : "N/A"}
+                                            velocity={plane.velocity ? (plane.velocity * 60 * 60 / 1000).toFixed() + "km/h" : "N/A"}
+                                            altitude={plane.altitude ? plane.altitude.toFixed() + "m" : "N/A"}
                                         />
                                     </Callout>
                                 </MapView.Marker>)
@@ -140,14 +132,37 @@ const styles = StyleSheet.create({
 
 MapScreen.navigationOptions = navData => {
     const observationHistory = navData.navigation.getParam('observationHistory');
+    const saveFile = async (data) => {
+        const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
+        serverlog(status)
+        if (status === "granted") {
+            const today = new Date();
+            const date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+            const time = today.getHours() + "-" + today.getMinutes() + "-" + today.getSeconds();
+            let fileUri = FileSystem.documentDirectory + `observations-${date}-${time}.txt`;
+            serverlog(fileUri)
+            try {
+                await FileSystem.writeAsStringAsync(fileUri, JSON.stringify(data), { encoding: FileSystem.EncodingType.UTF8 });
+                const asset = await MediaLibrary.createAssetAsync(fileUri)
+                await MediaLibrary.createAlbumAsync("Download", asset, false)
+                ToastAndroid.show('All observed planes saved in Download folder!', ToastAndroid.LONG);
+            } catch(err) {
+                ToastAndroid.show('Something went wrong :(', ToastAndroid.SHORT);
+                serverlog("error")
+                serverlog(err);
+            }
+        }
+    }
     return {
         headerTitle: 'Map',
         headerRight: <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
             <Item
                 title="Save to file"
                 iconName='md-save'
-                onPress={() => {
-                    serverlog(observationHistory)
+                onPress={async () => {
+                    if (observationHistory.length) {
+                        saveFile(observationHistory);
+                    }
                 }}
             />
 

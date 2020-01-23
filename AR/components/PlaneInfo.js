@@ -6,8 +6,8 @@ const PlaneInfo = props => {
         <View style={styles.container}>
                 <Text style={styles.textStyle}>icao24: {props.icao24}</Text>
                 <Text style={styles.textStyle}>Callsign: {props.callsign}</Text>
-                <Text style={styles.textStyle}>Velocity: {props.velocity}km/h</Text>
-                <Text style={styles.textStyle}>Altitude: {props.altitude}m</Text>
+                <Text style={styles.textStyle}>Velocity: {props.velocity}</Text>
+                <Text style={styles.textStyle}>Altitude: {props.altitude}</Text>
         </View>
     )
 }
