@@ -41,7 +41,7 @@ const DataProvider = props => {
                     const headingRes = await Location.getHeadingAsync();
                     dispatch(planeActions.setLocation(location.coords.latitude, location.coords.longitude));
                     dispatch(planeActions.setHeading(headingRes.trueHeading));
-                    API.getPlanes(location.coords.latitude, location.coords.longitude, 300, headingRes.trueHeading);
+                    //API.getPlanes(location.coords.latitude, location.coords.longitude, 300, headingRes.trueHeading);
                     setPlanesFetched(true);
                 }
             } catch (err) {

@@ -42,7 +42,8 @@ exports.getAllPlanesInRange = async (req, res, next) => {
     const userLongitude = req.query.longitude;
     const range = req.query.range;
     const userHeading = req.query.heading;
-    if (!req.query.latitude || !req.query.longitude || !req.query.range || !req.query.heading){
+    console.log(userHeading);
+    if (!req.query.latitude || !req.query.longitude || !req.query.range){
         return res.status(400).send("Invalid query parameters")
     }
     const c = Math.sqrt(Math.pow(range, 2) + Math.pow(range, 2));
@@ -58,13 +59,15 @@ exports.getAllPlanesInRange = async (req, res, next) => {
                 plane.angleBetweenUserAndPlane = toDegrees(Math.atan(plane.altitude / distanceToPlane));
                 return (distanceToPlane/1000 <= range);
             });
-            if (planesInRangeOfUser) {
+            if (planesInRangeOfUser && userHeading) {
                 planesInRangeOfUser.forEach((plane => { 
                     const mappedARCoords = findMappedCoordinates({ latitude: userLatitude, longitude: userLongitude}, {latitude: plane.latitude, longitude: plane.longitude});
                     plane.arLatitude = mappedARCoords.latitude;
                     plane.arLongitude = mappedARCoords.longitude;
                     plane.arPoint = transformPointToAR(plane.arLatitude, plane.arLongitude, userLatitude, userLongitude,  userHeading);
-                    plane.arPoint.y = toDegrees(Math.atan(plane.altitude / plane.distanceToPlane)) / 10
+                    if (plane.altitude) {
+                        plane.arPoint.y = toDegrees(Math.atan(plane.altitude / plane.distanceToPlane)) / 10
+                    }
                 }));
                 // await asyncForEach(planesInRangeOfUser, async (plane) => {
                 //     try {

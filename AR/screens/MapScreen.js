@@ -4,7 +4,7 @@ import MapView from 'react-native-maps';
 import { Marker, Callout } from 'react-native-maps';
 import { View, StyleSheet, Dimensions, ToastAndroid } from 'react-native';
 import { useSelector, useDispatch, useStore } from 'react-redux';
-
+import { withNavigationFocus } from 'react-navigation';
 
 import Colors from '../constants/Colors';
 import manMarker from '../assets/standing-up-man-.png';
@@ -52,15 +52,18 @@ const MapScreen = props => {
     });
 
     useEffect(() => {
-        const planesSubscription = API.getPlaneSubject();
-        planesSubscription.subscribe(value => {
-            setPlanes(value)
-        });
-
-        // return () => {
-        //     API.planesSubject.unsubscribe();
-        // }
-    }, []);
+        if(!props.isFocused) {
+            serverlog("Stopping watching planes")
+            API.stopWatchingPlanes();
+        } else {
+            API.getPlanes(userLat, userLng, 150)
+            const planesSubscription = API.getPlaneSubject();
+            planesSubscription.subscribe(value => {
+                serverlog("New planes recived!")
+                setPlanes(value)
+            });
+        }
+    }, [props.isFocused])
 
     const onRegionChangeHandler = (region) => {
         setMapLat(region.latitude)
@@ -171,4 +174,4 @@ MapScreen.navigationOptions = navData => {
     }
 }
 
-export default MapScreen;
+export default withNavigationFocus(MapScreen);
