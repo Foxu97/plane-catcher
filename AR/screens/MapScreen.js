@@ -56,7 +56,7 @@ const MapScreen = props => {
             serverlog("Stopping watching planes")
             API.stopWatchingPlanes();
         } else {
-            API.getPlanes(userLat, userLng, 150)
+            API.getPlanes(userLat, userLng, 70)
             const planesSubscription = API.getPlaneSubject();
             planesSubscription.subscribe(value => {
                 serverlog("New planes recived!")

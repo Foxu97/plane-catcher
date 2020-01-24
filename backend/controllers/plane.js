@@ -42,7 +42,9 @@ exports.getAllPlanesInRange = async (req, res, next) => {
     const userLongitude = req.query.longitude;
     const range = req.query.range;
     const userHeading = req.query.heading;
-    console.log(userHeading);
+
+    console.log("latitude: ",userLatitude)
+    console.log("heading: ", userHeading);
     if (!req.query.latitude || !req.query.longitude || !req.query.range){
         return res.status(400).send("Invalid query parameters")
     }
@@ -59,33 +61,22 @@ exports.getAllPlanesInRange = async (req, res, next) => {
                 plane.angleBetweenUserAndPlane = toDegrees(Math.atan(plane.altitude / distanceToPlane));
                 return (distanceToPlane/1000 <= range);
             });
-            if (planesInRangeOfUser && userHeading) {
+            if (planesInRangeOfUser && userHeading != -1) {
                 planesInRangeOfUser.forEach((plane => { 
-                    const mappedARCoords = findMappedCoordinates({ latitude: userLatitude, longitude: userLongitude}, {latitude: plane.latitude, longitude: plane.longitude});
-                    plane.arLatitude = mappedARCoords.latitude;
-                    plane.arLongitude = mappedARCoords.longitude;
-                    plane.arPoint = transformPointToAR(plane.arLatitude, plane.arLongitude, userLatitude, userLongitude,  userHeading);
-                    if (plane.altitude) {
-                        plane.arPoint.y = toDegrees(Math.atan(plane.altitude / plane.distanceToPlane)) / 10
-                    }
+                        const mappedARCoords = findMappedCoordinates({ latitude: userLatitude, longitude: userLongitude}, {latitude: plane.latitude, longitude: plane.longitude});
+                        plane.arLatitude = mappedARCoords.latitude;
+                        plane.arLongitude = mappedARCoords.longitude;
+                        plane.arPoint = transformPointToAR(plane.arLatitude, plane.arLongitude, userLatitude, userLongitude,  userHeading);
+                        if (plane.altitude) {
+                            plane.arPoint.y = toDegrees(Math.atan(plane.altitude / plane.distanceToPlane)) / 10
+                        } else {
+                            plane.arPoint.y = 0;
+                        }
+                    
                 }));
-                // await asyncForEach(planesInRangeOfUser, async (plane) => {
-                //     try {
-                //         const planeInfo = await getPlaneInfo(plane.icao24);
-                //         if (planeInfo.success !== false){
-                //             plane.airline = planeInfo[0].airline.icaoCode;
-                //             plane.aircraft = planeInfo[0].aircraft.icaoCode;
-                //             plane.arrival = planeInfo[0].arrival.iataCode;
-                //             plane.departure = planeInfo[0].departure.iataCode;
-                //             plane.flight = planeInfo[0].flight.icaoNumber
-                //         }
-                //     } catch(err) {
-                //         console.log(err)
-                //     }
-                // });
-                // console.log(planesInRangeOfUser)
-                res.status(200).json(planesInRangeOfUser);
             }
+            
+            res.status(200).json(planesInRangeOfUser);
         }
         else {
             res.status(404).json({message: "No planes in given range!"});
@@ -164,12 +155,6 @@ const mapPlanes = (planes) => {
             mappedPlanes.push(newPlane);
         });
         return mappedPlanes;
-    }
-}
-
-const asyncForEach = async(array, callback) => {
-    for (let index = 0; index < array.length; index++) {
-      await callback(array[index], index, array);
     }
 }
 
