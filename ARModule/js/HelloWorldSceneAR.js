@@ -10,8 +10,6 @@ import {
   ViroFlexView
 } from 'react-viro';
 
-import * as Location from 'expo-location';
-import * as Permissions from 'expo-permissions';
 import * as API from '../api';
 
 export default class HelloWorldSceneAR extends Component {
@@ -139,7 +137,7 @@ export default class HelloWorldSceneAR extends Component {
 
 
   serverLog(message) {
-    fetch('http://192.168.74.254:8082/debug/consolelog', {
+    fetch('http://plane-catcher-backend.herokuapp.com/consolelog', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
