@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const router = express.Router()
 const dotenv = require('dotenv').config();
 const dbConfig = require('./config/dbConfig');
-const PORT = process.env.PORT || 8081;
+const PORT = process.env.PORT || 8082;
 
 const planeRoutes = require('./routes/plane');
 const userRoutes = require('./routes/user');

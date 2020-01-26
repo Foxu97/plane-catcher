@@ -1,0 +1,5 @@
+apply from: '../node_modules/react-native-unimodules/gradle.groovy'
+includeUnimodulesProjects()
+rootProject.name = 'ARModule'
+
+include ':app'
