@@ -1,5 +1,5 @@
-const { body } = require('express-validator/check');
-const User = require('../models/user');
+const { body } = require('express-validator');
+const User = require('../models/User');
 
 exports.registrationValidation = [
     body('email')

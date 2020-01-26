@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const router = express.Router()
 const dotenv = require('dotenv').config();
 const dbConfig = require('./config/dbConfig');
+const PORT = process.env.PORT || 8081;
 
 const planeRoutes = require('./routes/plane');
 const userRoutes = require('./routes/user');
@@ -27,17 +28,22 @@ app.use((req, res, next) => {
 var swaggerUi = require('swagger-ui-express'),
     swaggerDocument = require('./swagger.json');
 
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-app.use('/api/v1', router);
-
-app.use('/user', userRoutes);
-app.use('/plane', planeRoutes);
-app.use('/debug', debugRoutes);
-
+    
+    app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+    app.use('/api/v1', router);
+    
+    app.use('/user', userRoutes);
+    app.use('/plane', planeRoutes);
+    app.use('/debug', debugRoutes);
+    
+    app.use('/', (req, res, next) => {
+      return res.send("Backend works! :)");
+    })
 
 mongoose.connect(
   dbConfig.url, dbConfig.options
 ).then( result => {
-  app.listen(8080, "0.0.0.0");
-  console.log("Listening server on port 8080");
+  app.listen(PORT, () => {
+    console.log(`Listening server on port ${PORT}`);
+  });
 }).catch( err => console.log(err));
