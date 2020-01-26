@@ -21,14 +21,14 @@ const serverlog = (message) => {
     });
 }
 
-export const getPlanes = async (userLatitude, userLongitude, range, heading = -1) => {
+export const getPlanes = async (userLatitude, userLongitude, range) => {
     // return new Promise((resolve, reject) => {
         interval = setInterval(async () => {
             try {
-                const response = await fetch(`${BASE_URL}plane?latitude=${userLatitude.toString()}&longitude=${userLongitude.toString()}&range=${range}&heading=${heading}`);
+                const response = await fetch(`${BASE_URL}plane?latitude=${userLatitude.toString()}&longitude=${userLongitude.toString()}&range=${range}&heading=-1`);
                 const resData = await response.json();
                 //serverlog(resData)
-                planesSubject.next(resData);
+                planesSubject.next(resData.data);
 
             } catch (err) {
                 console.log(err)
@@ -62,7 +62,7 @@ export const getPlanesAR = async (userLatitude, userLongitude, range, heading) =
                 const response = await fetch(`${BASE_URL}plane?latitude=${userLatitude.toString()}&longitude=${userLongitude.toString()}&range=${range}&heading=${heading}`);
                 const resData = await response.json();
                 //serverlog(resData)
-                planesSubjectAR.next(resData);
+                planesSubjectAR.next(resData.data);
 
             } catch (err) {
                 console.log(err)
