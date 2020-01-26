@@ -42,7 +42,7 @@ exports.getAllPlanesInRange = async (req, res, next) => {
     const userLongitude = req.query.longitude;
     const range = parseInt(req.query.range);
     const userHeading = parseInt(req.query.heading);
-
+    console.log("Getting planes")
     if (isNaN(range) || isNaN(userHeading)) {
         return res.status(400).send({ message: "Invalid range or heading format", data: null });
     }
