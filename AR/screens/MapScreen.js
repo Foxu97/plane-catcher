@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { HeaderButtons, Item } from 'react-navigation-header-buttons';
 import MapView from 'react-native-maps';
 import { Marker, Callout } from 'react-native-maps';
-import { View, StyleSheet, Dimensions, ToastAndroid } from 'react-native';
+import { View, StyleSheet, Dimensions, ToastAndroid, Text } from 'react-native';
 import { useSelector, useDispatch, useStore } from 'react-redux';
 import { withNavigationFocus } from 'react-navigation';
 
@@ -20,28 +20,14 @@ import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
 import * as Permissions from 'expo-permissions';
 
-
 import CompassHeading from 'react-native-compass-heading';
 
-
-const serverlog = (message) => {
-    fetch('http://192.168.74.254:8082/debug/consolelog', {
-        method: 'POST',
-        headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            message: message
-        }),
-    });
-}
 
 const MapScreen = props => {
     const dispatch = useDispatch();
     const [planes, setPlanes] = useState();
-    const [latDelta, setLatDelta] = useState(0.0922);
-    const [lngDelta, setLngDelta] = useState(0.0421);
+    const [latDelta, setLatDelta] = useState(2.8522);
+    const [lngDelta, setLngDelta] = useState(2.7421);
     const userLat = useSelector(state => state.planes.latitude);
     const userLng = useSelector(state => state.planes.longitude);
 
@@ -54,25 +40,22 @@ const MapScreen = props => {
     const setRegion = (lat, lng) => ({
         latitude: lat,
         longitude: lng,
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0421
+        latitudeDelta: 2.8522,
+        longitudeDelta: 2.7421
     });
 
     useEffect(() => {
         if (!props.isFocused) {
-            serverlog("Stopping watching planes")
             API.stopWatchingPlanes();
             CompassHeading.stop();
         } else {
             const degree_update_rate = 3;
             CompassHeading.start(degree_update_rate, degree => {
-                serverlog(`CompassHeading ${degree}`);
               setCompassHeading(degree);
             });
             API.getPlanes(userLat, userLng, 70)
             const planesSubscription = API.getPlaneSubject();
             planesSubscription.subscribe(value => {
-                serverlog("New planes recived!")
                 if (value.length){
                     setPlanes(value);
                 }
@@ -97,7 +80,6 @@ const MapScreen = props => {
         const degree_update_rate = 3;
         
         CompassHeading.start(degree_update_rate, degree => {
-        serverlog(`CompassHeading ${degree}`);
           setCompassHeading(degree);
         });
         
@@ -136,7 +118,22 @@ const MapScreen = props => {
                                     image={planeMarker}
                                     key={plane.icao24}
                                     onPress={(e) => { e.stopPropagation(); onPlaneTapHandler(plane) }}
-                                >
+                                >   
+                                    
+                                    {plane.altitude ? <Text
+                                    style={{
+                                        transform: [{ rotate: `-${plane.trueTrack}deg`}],
+                                        color: Colors.accent,
+                                        zIndex: 9,
+                                        width: 40,
+                                        height: 40,
+                                        textAlign: "center",
+                                        marginTop: 36
+                                    }}
+                                    >{(plane.altitude / 1000).toFixed() + "km"}</Text> : null}
+                                    
+
+
                                     <Callout>
                                         <PlaneInfo
                                             icao24={plane.icao24}
@@ -172,13 +169,11 @@ MapScreen.navigationOptions = navData => {
     const observationHistory = navData.navigation.getParam('observationHistory');
     const saveFile = async (data) => {
         const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
-        serverlog(status)
         if (status === "granted") {
             const today = new Date();
             const date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
             const time = today.getHours() + "-" + today.getMinutes() + "-" + today.getSeconds();
             let fileUri = FileSystem.documentDirectory + `observations-${date}-${time}.txt`;
-            serverlog(fileUri)
             try {
                 await FileSystem.writeAsStringAsync(fileUri, JSON.stringify(data), { encoding: FileSystem.EncodingType.UTF8 });
                 const asset = await MediaLibrary.createAssetAsync(fileUri)
@@ -186,8 +181,6 @@ MapScreen.navigationOptions = navData => {
                 ToastAndroid.show('All observed planes saved in Download folder!', ToastAndroid.LONG);
             } catch (err) {
                 ToastAndroid.show('Something went wrong :(', ToastAndroid.SHORT);
-                serverlog("error")
-                serverlog(err);
             }
         }
     }

@@ -8,18 +8,6 @@ import {
 } from 'react-viro';
 
 
-const serverlog = (message) => {
-  fetch('http://plane-catcher-backend.herokuapp.com/debug/consolelog', {
-      method: 'POST',
-      headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-          message: message
-      }),
-  });
-}
 
 const InitialARScene = require('./js/HelloWorldSceneAR');
 const MAP = "MAP";
@@ -35,14 +23,6 @@ const ARScreen = props => {
     longitude: userLongitude
   }
 
-  useEffect(() => {
-    if(!props.isFocused) {
-        serverlog("EXIT AR screnn")
-
-    } else {
-
-    }
-}, [props.isFocused])
 
   const _exitViro = () => {
     setNavigationType("MAP")
