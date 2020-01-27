@@ -9,6 +9,7 @@ import { withNavigationFocus } from 'react-navigation';
 import Colors from '../constants/Colors';
 import manMarker from '../assets/standing-up-man-.png';
 import planeMarker from '../assets/plane.png';
+import headingMarker from '../assets/arrow.png';
 import { ActivityIndicator } from 'react-native';
 import * as API from '../api';
 import PlaneInfo from '../components/PlaneInfo';
@@ -18,6 +19,7 @@ import * as planesActions from '../store/planes/planes-actions';
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
 import * as Permissions from 'expo-permissions';
+import * as Location from 'expo-location';
 
 const serverlog = (message) => {
     fetch('http://192.168.74.254:8080/debug/consolelog', {
@@ -44,12 +46,15 @@ const MapScreen = props => {
     const [mapLng, setMapLng] = useState(userLng);
     const store = useStore();
 
+    const [deviceHeading, setDeviceHeading] = useState(null);
+
     const setRegion = (lat, lng) => ({
         latitude: lat,
         longitude: lng,
         latitudeDelta: 0.0922,
         longitudeDelta: 0.0421
     });
+
 
     useEffect(() => {
         if(!props.isFocused) {
@@ -62,6 +67,11 @@ const MapScreen = props => {
                 serverlog("New planes recived!")
                 setPlanes(value)
             });
+            Location.watchHeadingAsync((val) => {
+                let head = parseInt(val.trueHeading);
+                setDeviceHeading(head)
+            })
+
         }
     }, [props.isFocused])
 
@@ -91,6 +101,12 @@ const MapScreen = props => {
                                 longitudeDelta: lngDelta
                             }} style={styles.mapStyle} >
 
+                            {deviceHeading ? <MapView.Marker 
+                                coordinate={setRegion(userLat, userLng)}
+                                image={headingMarker}
+                                rotation={parseInt(deviceHeading)}
+                            /> : null }
+
                             <MapView.Marker
                                 coordinate={setRegion(userLat, userLng)}
                                 image={manMarker}
@@ -114,7 +130,7 @@ const MapScreen = props => {
                                 </MapView.Marker>)
                             })) : null}
                         </MapView>) : <ActivityIndicator />
-                ), [planes])
+                ), [planes, deviceHeading])
             }
 
         </View>

@@ -20,7 +20,7 @@ import * as FileSystem from 'expo-file-system';
 import * as Permissions from 'expo-permissions';
 
 const serverlog = (message) => {
-    fetch('http://192.168.74.254:8080/debug/consolelog', {
+    fetch('http://plane-catcher-backend.herokuapp.com/debug/consolelog', {
         method: 'POST',
         headers: {
             Accept: 'application/json',

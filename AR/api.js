@@ -1,6 +1,6 @@
 import { BehaviorSubject } from 'rxjs'
 
-const BASE_URL = "http://192.168.74.254:8080/"
+const BASE_URL = "http://plane-catcher-backend.herokuapp.com/"
 
 const planesSubject = new BehaviorSubject([]);
 const planesSubjectAR = new BehaviorSubject([]);
@@ -9,7 +9,7 @@ const deviceHeadingSubject = new BehaviorSubject([]);
 let interval;
 
 const serverlog = (message) => {
-    fetch('http://192.168.74.254:8080/debug/consolelog', {
+    fetch('http://plane-catcher-backend.herokuapp.com/consolelog', {
         method: 'POST',
         headers: {
             Accept: 'application/json',
