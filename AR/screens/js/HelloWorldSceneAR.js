@@ -129,10 +129,11 @@ export default class HelloWorldSceneAR extends Component {
     API.getPlanesAR(this.props.arSceneNavigator.viroAppProps.latitude, this.props.arSceneNavigator.viroAppProps.longitude, 80, heading);
     const planesSubscription = API.getPlaneSubjectAR();
     planesSubscription.subscribe(value => {
-        this.serverLog(value.length)
-        this.setState({
-          planes: value
-        });
+        if(value.length) {
+          this.setState({
+            planes: value
+          });
+        }
     });  
   }
 

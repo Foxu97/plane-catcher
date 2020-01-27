@@ -9,6 +9,7 @@ import { withNavigationFocus } from 'react-navigation';
 import Colors from '../constants/Colors';
 import manMarker from '../assets/standing-up-man-.png';
 import planeMarker from '../assets/plane.png';
+import headingMarker from '../assets/up.png';
 import { ActivityIndicator } from 'react-native';
 import * as API from '../api';
 import PlaneInfo from '../components/PlaneInfo';
@@ -19,8 +20,12 @@ import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
 import * as Permissions from 'expo-permissions';
 
+
+import CompassHeading from 'react-native-compass-heading';
+
+
 const serverlog = (message) => {
-    fetch('http://plane-catcher-backend.herokuapp.com/debug/consolelog', {
+    fetch('http://192.168.74.254:8082/debug/consolelog', {
         method: 'POST',
         headers: {
             Accept: 'application/json',
@@ -39,7 +44,9 @@ const MapScreen = props => {
     const [lngDelta, setLngDelta] = useState(0.0421);
     const userLat = useSelector(state => state.planes.latitude);
     const userLng = useSelector(state => state.planes.longitude);
-    serverlog(userLat);
+
+    const [compassHeading, setCompassHeading] = useState(null);
+
     const [mapLat, setMapLat] = useState(userLat);
     const [mapLng, setMapLng] = useState(userLng);
     const store = useStore();
@@ -52,18 +59,26 @@ const MapScreen = props => {
     });
 
     useEffect(() => {
-        if(!props.isFocused) {
+        if (!props.isFocused) {
             serverlog("Stopping watching planes")
             API.stopWatchingPlanes();
+            CompassHeading.stop();
         } else {
+            const degree_update_rate = 3;
+            CompassHeading.start(degree_update_rate, degree => {
+                serverlog(`CompassHeading ${degree}`);
+              setCompassHeading(degree);
+            });
             API.getPlanes(userLat, userLng, 70)
             const planesSubscription = API.getPlaneSubject();
             planesSubscription.subscribe(value => {
                 serverlog("New planes recived!")
-                setPlanes(value)
+                if (value.length){
+                    setPlanes(value);
+                }
             });
         }
-    }, [props.isFocused])
+    }, [props.isFocused]);
 
     const onRegionChangeHandler = (region) => {
         setMapLat(region.latitude)
@@ -74,8 +89,22 @@ const MapScreen = props => {
     const onPlaneTapHandler = (plane) => {
         dispatch(planesActions.addPlaneToHistory(plane));
         const state = store.getState();
-        props.navigation.setParams({observationHistory: state.planes.observationHistory});
+        props.navigation.setParams({ observationHistory: state.planes.observationHistory });
     }
+
+
+    useEffect(() => {
+        const degree_update_rate = 3;
+        
+        CompassHeading.start(degree_update_rate, degree => {
+        serverlog(`CompassHeading ${degree}`);
+          setCompassHeading(degree);
+        });
+        
+        return () => {
+          CompassHeading.stop();
+        };
+    }, [])
 
     return (
         <View style={styles.container}>
@@ -95,13 +124,18 @@ const MapScreen = props => {
                                 coordinate={setRegion(userLat, userLng)}
                                 image={manMarker}
                             />
+                            {compassHeading ? <MapView.Marker
+                                coordinate={setRegion(userLat, userLng)}
+                                image={headingMarker}
+                                rotation={compassHeading}
+                            /> : null}
                             {planes ? planes.map((plane => {
                                 return (<MapView.Marker
                                     coordinate={setRegion(plane.latitude, plane.longitude)}
                                     rotation={plane.trueTrack}
                                     image={planeMarker}
                                     key={plane.icao24}
-                                    onPress={(e) => {e.stopPropagation(); onPlaneTapHandler(plane)}}
+                                    onPress={(e) => { e.stopPropagation(); onPlaneTapHandler(plane) }}
                                 >
                                     <Callout>
                                         <PlaneInfo
@@ -114,7 +148,7 @@ const MapScreen = props => {
                                 </MapView.Marker>)
                             })) : null}
                         </MapView>) : <ActivityIndicator />
-                ), [planes])
+                ), [planes, compassHeading])
             }
 
         </View>
@@ -141,7 +175,7 @@ MapScreen.navigationOptions = navData => {
         serverlog(status)
         if (status === "granted") {
             const today = new Date();
-            const date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+            const date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
             const time = today.getHours() + "-" + today.getMinutes() + "-" + today.getSeconds();
             let fileUri = FileSystem.documentDirectory + `observations-${date}-${time}.txt`;
             serverlog(fileUri)
@@ -150,7 +184,7 @@ MapScreen.navigationOptions = navData => {
                 const asset = await MediaLibrary.createAssetAsync(fileUri)
                 await MediaLibrary.createAlbumAsync("Download", asset, false)
                 ToastAndroid.show('All observed planes saved in Download folder!', ToastAndroid.LONG);
-            } catch(err) {
+            } catch (err) {
                 ToastAndroid.show('Something went wrong :(', ToastAndroid.SHORT);
                 serverlog("error")
                 serverlog(err);
