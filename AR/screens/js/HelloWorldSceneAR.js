@@ -122,7 +122,7 @@ export default class HelloWorldSceneAR extends Component {
 
   async _onInitialized() {
     const heading = await this._getHeadingAsync()
-    API.getPlanesAR(this.props.arSceneNavigator.viroAppProps.latitude, this.props.arSceneNavigator.viroAppProps.longitude, 80, heading);
+    API.getPlanesAR(this.props.arSceneNavigator.viroAppProps.latitude, this.props.arSceneNavigator.viroAppProps.longitude, 130, heading);
     const planesSubscription = API.getPlaneSubjectAR();
     planesSubscription.subscribe(value => {
         if(value.length) {

@@ -7,7 +7,7 @@ import { useSelector, useDispatch, useStore } from 'react-redux';
 import { withNavigationFocus } from 'react-navigation';
 
 import Colors from '../constants/Colors';
-import manMarker from '../assets/standing-up-man-.png';
+import manMarker from '../assets/standing-up-man.png';
 import planeMarker from '../assets/plane.png';
 import headingMarker from '../assets/up.png';
 import { ActivityIndicator } from 'react-native';
@@ -53,7 +53,7 @@ const MapScreen = props => {
             CompassHeading.start(degree_update_rate, degree => {
               setCompassHeading(degree);
             });
-            API.getPlanes(userLat, userLng, 70)
+            API.getPlanes(userLat, userLng, 130)
             const planesSubscription = API.getPlaneSubject();
             planesSubscription.subscribe(value => {
                 if (value.length){
@@ -86,7 +86,7 @@ const MapScreen = props => {
         return () => {
           CompassHeading.stop();
         };
-    }, [])
+    }, []) // maybe i should call it only once on isFocused
 
     return (
         <View style={styles.container}>
