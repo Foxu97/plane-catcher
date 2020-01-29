@@ -3,6 +3,7 @@ export const SET_USER_LOCATION = 'SET_USER_LOCATION';
 export const SET_DEVICE_HEADING = 'SET_DEVICE_HEADING';
 export const FETCH_PLANES = "FETCH_PLANES";
 export const ADD_PLANE_TO_HISTORY = "ADD_PLANE_TO_HISTORY";
+export const SET_OBSERVATION_RANGE = "SET_OBSERVATION_RANGE";
 
 export const fetchPlanes = (userLatitude, userLongitude, range, heading) => {
     return async dispatch => {
@@ -36,5 +37,11 @@ export const setHeading = (heading) => {
 export const addPlaneToHistory = (plane) => {
     return {
         type: ADD_PLANE_TO_HISTORY, plane: plane
+    }
+}
+
+export const setObservationRange = (rangeInKm) => {
+    return {
+        type: SET_OBSERVATION_RANGE, range: rangeInKm
     }
 }
