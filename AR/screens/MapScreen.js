@@ -45,6 +45,7 @@ const MapScreen = props => {
     });
 
     useEffect(() => {
+        let planesSubscription;
         if (!props.isFocused) {
             API.stopWatchingPlanes();
             CompassHeading.stop();
@@ -54,12 +55,22 @@ const MapScreen = props => {
               setCompassHeading(degree);
             });
             API.getPlanes(userLat, userLng, 130)
-            const planesSubscription = API.getPlaneSubject();
+            planesSubscription = API.getPlaneSubject();
             planesSubscription.subscribe(value => {
                 if (value.length){
                     setPlanes(value);
                 }
             });
+        }
+        return () => {
+            API.stopWatchingPlanes();
+            if(planesSubscription){
+                planesSubscription.unsubscribe();
+                planesSubscription = null;
+            }
+            if(CompassHeading){
+                CompassHeading.stop();
+            }
         }
     }, [props.isFocused]);
 
@@ -76,17 +87,17 @@ const MapScreen = props => {
     }
 
 
-    useEffect(() => {
-        const degree_update_rate = 3;
+    // useEffect(() => {
+    //     const degree_update_rate = 3;
         
-        CompassHeading.start(degree_update_rate, degree => {
-          setCompassHeading(degree);
-        });
+    //     CompassHeading.start(degree_update_rate, degree => {
+    //       setCompassHeading(degree);
+    //     });
         
-        return () => {
-          CompassHeading.stop();
-        };
-    }, []) // maybe i should call it only once on isFocused
+    //     return () => {
+    //       CompassHeading.stop();
+    //     };
+    // }, []) // maybe i should call it only once on isFocused
 
     return (
         <View style={styles.container}>
@@ -114,21 +125,18 @@ const MapScreen = props => {
                             {planes ? planes.map((plane => {
                                 return (<MapView.Marker
                                     coordinate={setRegion(plane.latitude, plane.longitude)}
-                                    rotation={plane.trueTrack}
-                                    image={planeMarker}
                                     key={plane.icao24}
                                     onPress={(e) => { e.stopPropagation(); onPlaneTapHandler(plane) }}
                                 >   
-                                    
+                                    <Image source={require("../assets/plane.png")} style={{height: 36, width:36,  transform: [{ rotate: `${plane.trueTrack}deg` }] }} />
                                     {plane.altitude ? <Text
                                     style={{
                                         transform: [{ rotate: `-${plane.trueTrack}deg`}],
                                         color: Colors.accent,
+                                        backgroundColor: "whitesmoke",
                                         zIndex: 9,
-                                        width: 40,
-                                        height: 40,
-                                        textAlign: "center",
-                                        marginTop: 36
+                                        width: 36,
+                                        textAlign: "center"
                                     }}
                                     >{(plane.altitude / 1000).toFixed() + "km"}</Text> : null}
                                     

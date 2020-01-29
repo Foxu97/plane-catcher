@@ -14,7 +14,7 @@ export const fetchPlanes = (userLatitude, userLongitude, range, heading) => {
             dispatch({ type: SET_USER_LOCATION, userLocation: {latitude: userLatitude, longitude: userLongitude} });
         }
         catch (err) {
-            console.log(err)
+            throw err
         }
     }
 }

@@ -17,9 +17,10 @@ export const getPlanes = async (userLatitude, userLongitude, range) => {
                 planesSubject.next(resData.data);
 
             } catch (err) {
+                throw err
                 console.log(err)
             }
-        }, 5000);
+        }, 2500);
 }
 
 export const stopWatchingPlanes = () => {
@@ -40,9 +41,10 @@ export const getPlanesAR = async (userLatitude, userLongitude, range, heading) =
                 planesSubjectAR.next(resData.data);
 
             } catch (err) {
-                console.log(err)
+                //console.log(err)
+                throw err
             }
-        }, 5000);
+        }, 2500);
 }
 
 export const stopWatchingPlanesAR = () => {

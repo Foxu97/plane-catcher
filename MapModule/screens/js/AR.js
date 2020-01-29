@@ -57,7 +57,7 @@ const AR = props => {
         }
     
         const heading = await Location.getHeadingAsync();
-        _serverLog(heading.accuracy);
+       // _serverLog(heading.accuracy);
         const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
         setUserLocation(location);
         setHeading(heading.trueHeading);
@@ -137,18 +137,18 @@ const AR = props => {
         });
     }
 
-    const _serverLog = (message) => {
-        fetch('http://192.168.74.254:8080/debug/consolelog', {
-            method: 'POST',
-            headers: {
-              Accept: 'application/json',
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              message: message
-            }),
-          });
-    }
+    // const _serverLog = (message) => {
+    //     fetch('http://192.168.74.254:8080/debug/consolelog', {
+    //         method: 'POST',
+    //         headers: {
+    //           Accept: 'application/json',
+    //           'Content-Type': 'application/json',
+    //         },
+    //         body: JSON.stringify({
+    //           message: message
+    //         }),
+    //       });
+    // }
 
     
     return (

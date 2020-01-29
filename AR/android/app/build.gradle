@@ -136,15 +136,15 @@ android {
             resValue 'string', 'app_name', 'PlaneCatcher'
             buildConfigField 'String', 'VR_PLATFORM', '"GVR"' //default to GVR
         }
-        gvr {
-            resValue 'string', 'app_name', 'PlaneCatcher'
-            buildConfigField 'String', 'VR_PLATFORM', '"GVR"'
-        }
-        ovr {
-            resValue 'string', 'app_name', 'PlaneCatcher'
-            applicationIdSuffix '.ovr'
-            buildConfigField 'String', 'VR_PLATFORM', '"OVR_MOBILE"'
-        }
+        // gvr {
+        //     resValue 'string', 'app_name', 'PlaneCatcher'
+        //     buildConfigField 'String', 'VR_PLATFORM', '"GVR"'
+        // }
+        // ovr {
+        //     resValue 'string', 'app_name', 'PlaneCatcher'
+        //     applicationIdSuffix '.ovr'
+        //     buildConfigField 'String', 'VR_PLATFORM', '"OVR_MOBILE"'
+        // }
     }
     buildTypes {
         release {

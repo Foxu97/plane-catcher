@@ -21,14 +21,19 @@ const DataProvider = props => {
                 if (result.status !== 'granted') {
                     ToastAndroid.show('Cant run app without permissions granted :(', ToastAndroid.LONG);
                 } else {
-                    const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
-                    const headingRes = await Location.getHeadingAsync();
-                    dispatch(planeActions.setLocation(location.coords.latitude, location.coords.longitude));
-                    dispatch(planeActions.setHeading(headingRes.trueHeading));
-                    setPlanesFetched(true);
+                    try {
+                        const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+                        dispatch(planeActions.setLocation(location.coords.latitude, location.coords.longitude));
+                        setPlanesFetched(true);
+                    }
+                    catch (err) {
+                        //console.log(err);
+                        throw err
+                    }
                 }
             } catch (err) {
-                console.log(err);
+                //console.log(err);
+                throw err
             }
     }
 

@@ -2,14 +2,14 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { HeaderButtons, Item } from 'react-navigation-header-buttons';
 import MapView from 'react-native-maps';
 import { Marker, Callout } from 'react-native-maps';
-import { View, StyleSheet, Dimensions, ToastAndroid } from 'react-native';
+import { View, StyleSheet, Dimensions, ToastAndroid, Text, Image } from 'react-native';
 import { useSelector, useDispatch, useStore } from 'react-redux';
 import { withNavigationFocus } from 'react-navigation';
 
 import Colors from '../constants/Colors';
-import manMarker from '../assets/standing-up-man-.png';
+import manMarker from '../assets/standing-up-man.png';
 import planeMarker from '../assets/plane.png';
-import headingMarker from '../assets/arrow.png';
+import headingMarker from '../assets/up.png';
 import { ActivityIndicator } from 'react-native';
 import * as API from '../api';
 import PlaneInfo from '../components/PlaneInfo';
@@ -21,27 +21,13 @@ import * as FileSystem from 'expo-file-system';
 import * as Permissions from 'expo-permissions';
 import * as Location from 'expo-location';
 
-const serverlog = (message) => {
-    fetch('http://192.168.74.254:8080/debug/consolelog', {
-        method: 'POST',
-        headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            message: message
-        }),
-    });
-}
-
 const MapScreen = props => {
     const dispatch = useDispatch();
     const [planes, setPlanes] = useState();
-    const [latDelta, setLatDelta] = useState(0.0922);
-    const [lngDelta, setLngDelta] = useState(0.0421);
+    const [latDelta, setLatDelta] = useState(2.8522);
+    const [lngDelta, setLngDelta] = useState(2.7421);
     const userLat = useSelector(state => state.planes.latitude);
     const userLng = useSelector(state => state.planes.longitude);
-    serverlog(userLat);
     const [mapLat, setMapLat] = useState(userLat);
     const [mapLng, setMapLng] = useState(userLng);
     const store = useStore();
@@ -51,27 +37,36 @@ const MapScreen = props => {
     const setRegion = (lat, lng) => ({
         latitude: lat,
         longitude: lng,
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0421
+        latitudeDelta: 2.8522,
+        longitudeDelta: 2.7421
     });
 
 
     useEffect(() => {
-        if(!props.isFocused) {
-            serverlog("Stopping watching planes")
+        //let locationSubscribtion;
+        let planesSubscription;
+        if (!props.isFocused) {
             API.stopWatchingPlanes();
         } else {
             API.getPlanes(userLat, userLng, 170)
-            const planesSubscription = API.getPlaneSubject();
+            planesSubscription = API.getPlaneSubject();
             planesSubscription.subscribe(value => {
-                serverlog("New planes recived!")
                 setPlanes(value)
             });
-            Location.watchHeadingAsync((val) => {
-                let head = parseInt(val.trueHeading);
-                setDeviceHeading(head)
-            })
-
+            // Location.watchHeadingAsync((val) => {
+            //     let head = parseInt(val.trueHeading);
+            //     setDeviceHeading(head)
+            // })
+        }
+        return () => {
+            API.stopWatchingPlanes();
+            if (locationSubscribtion){
+                //locationSubscribtion.remove();
+            }
+            if(planesSubscription){
+                planesSubscription.unsubscribe();
+                planesSubscription = null;
+            }
         }
     }, [props.isFocused])
 
@@ -84,7 +79,7 @@ const MapScreen = props => {
     const onPlaneTapHandler = (plane) => {
         dispatch(planesActions.addPlaneToHistory(plane));
         const state = store.getState();
-        props.navigation.setParams({observationHistory: state.planes.observationHistory});
+        props.navigation.setParams({ observationHistory: state.planes.observationHistory });
     }
 
     return (
@@ -101,11 +96,11 @@ const MapScreen = props => {
                                 longitudeDelta: lngDelta
                             }} style={styles.mapStyle} >
 
-                            {deviceHeading ? <MapView.Marker 
+                            {/* {deviceHeading ? <MapView.Marker
                                 coordinate={setRegion(userLat, userLng)}
                                 image={headingMarker}
                                 rotation={parseInt(deviceHeading)}
-                            /> : null }
+                            /> : null} */}
 
                             <MapView.Marker
                                 coordinate={setRegion(userLat, userLng)}
@@ -114,11 +109,19 @@ const MapScreen = props => {
                             {planes ? planes.map((plane => {
                                 return (<MapView.Marker
                                     coordinate={setRegion(plane.latitude, plane.longitude)}
-                                    rotation={plane.trueTrack}
-                                    image={planeMarker}
                                     key={plane.icao24}
-                                    onPress={(e) => {e.stopPropagation(); onPlaneTapHandler(plane)}}
+                                    onPress={(e) => { e.stopPropagation(); onPlaneTapHandler(plane) }}
                                 >
+                                    <Image source={require("../assets/plane.png")} style={{height: 36, width:36,  transform: [{ rotate: `${plane.trueTrack}deg` }] }} />
+                                    {plane.altitude ? <Text
+                                        style={{
+                                            color: Colors.accent,
+                                            backgroundColor: "whitesmoke",
+                                            zIndex: 9,
+                                            width: 36,
+                                            textAlign: "center",
+                                        }}
+                                    >{(plane.altitude / 1000).toFixed() + "km"}</Text> : null}
                                     <Callout>
                                         <PlaneInfo
                                             icao24={plane.icao24}
@@ -154,22 +157,19 @@ MapScreen.navigationOptions = navData => {
     const observationHistory = navData.navigation.getParam('observationHistory');
     const saveFile = async (data) => {
         const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
-        serverlog(status)
         if (status === "granted") {
             const today = new Date();
-            const date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+            const date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
             const time = today.getHours() + "-" + today.getMinutes() + "-" + today.getSeconds();
             let fileUri = FileSystem.documentDirectory + `observations-${date}-${time}.txt`;
-            serverlog(fileUri)
             try {
                 await FileSystem.writeAsStringAsync(fileUri, JSON.stringify(data), { encoding: FileSystem.EncodingType.UTF8 });
                 const asset = await MediaLibrary.createAssetAsync(fileUri)
                 await MediaLibrary.createAlbumAsync("Download", asset, false)
                 ToastAndroid.show('All observed planes saved in Download folder!', ToastAndroid.LONG);
-            } catch(err) {
+            } catch (err) {
                 ToastAndroid.show('Something went wrong :(', ToastAndroid.SHORT);
-                serverlog("error")
-                serverlog(err);
+                throw err
             }
         }
     }
