@@ -159,6 +159,16 @@ MapScreen.navigationOptions = navData => {
     }
     return {
         headerTitle: 'Map',
+        headerLeft: <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
+        <Item
+            title="AR"
+            iconName='md-camera'
+            onPress={() => {
+                navData.navigation.navigate("AR");
+            }}
+        />
+
+    </HeaderButtons>,
         headerRight: <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
             <Item
                 title="Save to file"
