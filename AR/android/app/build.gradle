@@ -113,6 +113,16 @@ android {
         versionCode 1
         versionName "1.0"
     }
+    signingConfigs {
+        release {
+            if (project.hasProperty('MYAPP_UPLOAD_STORE_FILE')) {
+                storeFile file(MYAPP_UPLOAD_STORE_FILE)
+                storePassword MYAPP_UPLOAD_STORE_PASSWORD
+                keyAlias MYAPP_UPLOAD_KEY_ALIAS
+                keyPassword MYAPP_UPLOAD_KEY_PASSWORD
+            }
+        }
+    }
     splits {
         abi {
             reset()
@@ -126,20 +136,21 @@ android {
             resValue 'string', 'app_name', 'PlaneCatcher'
             buildConfigField 'String', 'VR_PLATFORM', '"GVR"' //default to GVR
         }
-        gvr {
-            resValue 'string', 'app_name', 'PlaneCatcher'
-            buildConfigField 'String', 'VR_PLATFORM', '"GVR"'
-        }
-        ovr {
-            resValue 'string', 'app_name', 'PlaneCatcher'
-            applicationIdSuffix '.ovr'
-            buildConfigField 'String', 'VR_PLATFORM', '"OVR_MOBILE"'
-        }
+        // gvr {
+        //     resValue 'string', 'app_name', 'PlaneCatcher'
+        //     buildConfigField 'String', 'VR_PLATFORM', '"GVR"'
+        // }
+        // ovr {
+        //     resValue 'string', 'app_name', 'PlaneCatcher'
+        //     applicationIdSuffix '.ovr'
+        //     buildConfigField 'String', 'VR_PLATFORM', '"OVR_MOBILE"'
+        // }
     }
     buildTypes {
         release {
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            signingConfig signingConfigs.release
         }
     }
     // applicationVariants are e.g. debug, release
@@ -166,6 +177,7 @@ def jscFlavor = 'org.webkit:android-jsc:+'
 def enableHermes = project.ext.react.get("enableHermes", false);
 
 dependencies {
+    implementation project(':react-native-compass-heading')
     implementation project(':react-native-gesture-handler')
     implementation project(':react-native-reanimated')
     implementation project(':react-native-screens')

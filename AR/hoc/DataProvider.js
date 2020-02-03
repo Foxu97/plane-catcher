@@ -12,7 +12,6 @@ import * as API from '../api';
 import { ActivityIndicator } from 'react-native-paper';
 
 const DataProvider = props => {
-    serverlog("Data provider init")
     const dispatch = useDispatch();
     const [planesFetched, setPlanesFetched] = useState(false);
 

@@ -48,4 +48,6 @@ target 'AR' do
 
   pod 'RNFS', :path => '../node_modules/react-native-fs'
 
+  pod 'react-native-compass-heading', :path => '../node_modules/react-native-compass-heading'
+
 end

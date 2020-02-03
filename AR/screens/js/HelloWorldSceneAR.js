@@ -29,7 +29,6 @@ export default class HelloWorldSceneAR extends Component {
     this._onInitialized = this._onInitialized.bind(this);
     this._onTrackingUpdated = this._onTrackingUpdated.bind(this);
     this._getHeadingAsync = this._getHeadingAsync.bind(this);
-    this.serverLog = this.serverLog.bind(this);
   }
 
 
@@ -43,7 +42,6 @@ export default class HelloWorldSceneAR extends Component {
 
     let heading = await Location.getHeadingAsync();
     heading = parseInt(heading.trueHeading);
-    this.serverLog(heading);
 
     return heading;
   };
@@ -116,8 +114,6 @@ export default class HelloWorldSceneAR extends Component {
         }
       );
     }else if (state == ViroConstants.TRACKING_NONE) {
-      // Handle loss of tracking
-      this.serverlog("stopping watching planes from AR")
       API.stopWatchingPlanesAR();
     }
   };
@@ -126,28 +122,15 @@ export default class HelloWorldSceneAR extends Component {
 
   async _onInitialized() {
     const heading = await this._getHeadingAsync()
-    API.getPlanesAR(this.props.arSceneNavigator.viroAppProps.latitude, this.props.arSceneNavigator.viroAppProps.longitude, 80, heading);
+    API.getPlanesAR(this.props.arSceneNavigator.viroAppProps.latitude, this.props.arSceneNavigator.viroAppProps.longitude, 130, heading);
     const planesSubscription = API.getPlaneSubjectAR();
     planesSubscription.subscribe(value => {
-        this.serverLog(value.length)
-        this.setState({
-          planes: value
-        });
+        if(value.length) {
+          this.setState({
+            planes: value
+          });
+        }
     });  
-  }
-
-
-  serverLog(message) {
-    fetch('http://192.168.74.254:8080/debug/consolelog', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        message: message
-      }),
-    });
   }
 
 }

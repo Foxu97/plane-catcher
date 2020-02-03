@@ -185,5 +185,5 @@ const transformPointToAR = (objectLat, objectLng, deviceLat, deviceLng, heading)
     const newRotatedX = objFinalPosX * Math.cos(angleRadian) - objFinalPosZ * Math.sin(angleRadian)
     const newRotatedZ = objFinalPosZ * Math.cos(angleRadian) + objFinalPosX * Math.sin(angleRadian)
 
-    return ({ x: newRotatedX, z: newRotatedZ });
+    return ({ x: newRotatedX, z: -newRotatedZ });
 }
