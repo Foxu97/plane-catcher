@@ -42,7 +42,8 @@ exports.getAllPlanesInRange = async (req, res, next) => {
     const userLongitude = req.query.longitude;
     const range = parseInt(req.query.range);
     const userHeading = parseInt(req.query.heading);
-    console.log("Getting planes")
+    console.log("Getting planes, range: ", range)
+    let startDate = Date.now();
     if (isNaN(range) || isNaN(userHeading)) {
         return res.status(400).send({ message: "Invalid range or heading format", data: null });
     }
@@ -84,7 +85,10 @@ exports.getAllPlanesInRange = async (req, res, next) => {
 
             }));
         }
-
+        console.log(planesInRangeOfUser.length);
+        let stopDate = Date.now();
+        let time = stopDate - startDate;
+        console.log((stopDate - startDate) / 1000 + "s")
         res.status(200).json({ message: "Fetching planes successful!", data: planesInRangeOfUser });
     }
     catch (err) {
@@ -186,4 +190,55 @@ const transformPointToAR = (objectLat, objectLng, deviceLat, deviceLng, heading)
     const newRotatedZ = objFinalPosZ * Math.cos(angleRadian) + objFinalPosX * Math.sin(angleRadian)
 
     return ({ x: newRotatedX, z: -newRotatedZ });
+}
+// SOCKET
+
+
+exports.getAllPlanesInRangeSOCKET = async (userLatitude, userLongitude, range, userHeading = -1) => {
+    if (isNaN(range) || isNaN(userHeading)) {
+        return { message: "Invalid range or heading format", data: null };
+    }
+
+    if (!userLatitude || !userLongitude || !range) {
+        return { message: "Invalid query parameters", data: null };
+    }
+    const c = Math.sqrt(Math.pow(range, 2) + Math.pow(range, 2));
+    const userAreaBoundingBox = getBoundingBoxCoveringUserPosition({ latitude: userLatitude, longitude: userLongitude }, c);
+    try {
+        let allPlanes;
+        allPlanes = await fetchPlanesInBoundingBox(userAreaBoundingBox.minBoxPoint, userAreaBoundingBox.maxBoxPoint);
+        if (!allPlanes.states) {
+            return { message: "No planes in given range!", data: null };
+        }
+        const mappedPlanes = mapPlanesInfo(allPlanes.states);
+        const planesInRangeOfUser = mappedPlanes.filter(plane => {
+            const distanceToPlane = getDistance({ latitude: userLatitude, longitude: userLongitude }, { latitude: plane.latitude, longitude: plane.longitude });
+            plane.distanceToPlane = distanceToPlane;
+            plane.angleBetweenUserAndPlane = toDegrees(Math.atan(plane.altitude / distanceToPlane));
+            return (distanceToPlane / 1000 <= range);
+        });
+
+        if (planesInRangeOfUser.length === 0) {
+            return { message: "No planes in given range!", data: null };
+        }
+        if (!(userHeading < 0)) {
+            planesInRangeOfUser.forEach((plane => {
+                const mappedARCoords = findMappedCoordinates({ latitude: userLatitude, longitude: userLongitude }, { latitude: plane.latitude, longitude: plane.longitude });
+                plane.arLatitude = mappedARCoords.latitude;
+                plane.arLongitude = mappedARCoords.longitude;
+                plane.arPoint = transformPointToAR(plane.arLatitude, plane.arLongitude, userLatitude, userLongitude, userHeading);
+                if (plane.altitude) {
+                    plane.arPoint.y = toDegrees(Math.atan(plane.altitude / plane.distanceToPlane)) / 10;
+                    plane.distanceInLine = Math.sqrt(Math.pow(plane.distanceToPlane, 2) + Math.pow(plane.altitude, 2));
+                } else {
+                    plane.arPoint.y = 0;
+                }
+            }));
+        }
+        return { message: "Fetching planes successful!", data: planesInRangeOfUser };
+    }
+    catch (err) {
+        console.log(err);
+        return { message: "Something went wrong!", data: null };
+    }
 }

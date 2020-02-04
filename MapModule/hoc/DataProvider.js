@@ -23,7 +23,6 @@ const DataProvider = props => {
                     setHasLocation(false);
                     ToastAndroid.show('Cant run app without permissions granted :(', ToastAndroid.LONG);
                 } else {
-<<<<<<< HEAD
                     setHasPermissions(true);
                     const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
                     const headingRes = await Location.getHeadingAsync();

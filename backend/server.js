@@ -40,10 +40,44 @@ var swaggerUi = require('swagger-ui-express'),
       return res.send("Backend works! :)");
     })
 
+
+const getAllPlanesInRangeSOCKET =  require('./controllers/plane').getAllPlanesInRangeSOCKET;
+
+const getPlanes = async (userLat, userLng, range, heading) => {
+  data = await getAllPlanesInRangeSOCKET(userLat, userLng, range, heading);
+  return data;
+}
+const timeoutIDs = [];
+
+const clearTimeoutsArray = () =>{
+  timeoutIDs.forEach(id => {
+    clearInterval(id);
+  })
+}
 mongoose.connect(
   dbConfig.url, dbConfig.options
 ).then( result => {
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`Listening server on port ${PORT}`);
+  });
+  const io = require('./socket').init(server);
+  io.on('connection', socket => {
+    let intervalID;
+    socket.on('getPlanesInRange', async (userLat, userLng, range, heading) => {
+      intervalID = setInterval(async() => {
+        const data = await getPlanes(userLat, userLng, range, heading);
+        timeoutIDs.push(intervalID);
+        socket.emit('fetchedPlanesInRange', data)
+      }, 2000);
+    });
+    socket.on('clearInterval', function () {
+      clearTimeoutsArray();
+      socket.emit('intervalCleaned');
+    });
+
+    socket.on('disconnect', function () {
+      clearTimeoutsArray()
+    });
+
   });
 }).catch( err => console.log(err));

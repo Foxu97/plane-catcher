@@ -20,7 +20,7 @@ import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
 import * as Permissions from 'expo-permissions';
 
-import axios from 'axios';
+import io from 'socket.io-client'
 
 const MapScreen = props => {
     const dispatch = useDispatch();
@@ -34,10 +34,10 @@ const MapScreen = props => {
     const [mapLng, setMapLng] = useState(userLng);
     const store = useStore();
     const [deviceHeading, setDeviceHeading] = useState(null);
+    const BASE_URL = "http://192.168.74.254:8082/";
 
-    let timeoutIDS = [];
-    const BASE_URL = "http://plane-catcher-backend.herokuapp.com/"
-    //const BASE_URL = "http://192.168.74.107:8082/";
+    let socket, planeSocket
+    //const BASE_URL = "http://plane-catcher-backend.herokuapp.com/"
 
     const setRegion = (lat, lng) => ({
         latitude: lat,
@@ -47,35 +47,29 @@ const MapScreen = props => {
     });
 
     useEffect(() => {
-        runGetPlanes();
-        return () => {
-            timeoutIDS.forEach(id => {
-                clearTimeout(id);
-            })
-        }
-    }, [observationRange])
-
-    const runGetPlanes = useCallback(() => {
-        timeoutIDS.forEach(id => {
-            clearTimeout(id);
+        socket = io();
+        planeSocket = io(BASE_URL);
+        planeSocket.on('connect', () => { 
+            console.log('connected to socket server'); 
+          }); 
+        planeSocket.emit('clearInterval');
+        planeSocket.on('intervalCleaned', () => {
+            planeSocket.emit('getPlanesInRange', userLat, userLng, observationRange, deviceHeading);
+        });
+        let toastAlreadyShown = false;
+        planeSocket.on('fetchedPlanesInRange', (planes) => {
+            if (planes && planes.data) {
+                setPlanes(planes.data);
+            } else {
+                setPlanes([]);
+                if (!toastAlreadyShown){
+                    ToastAndroid.show('No planes in given range!', ToastAndroid.LONG);
+                    toastAlreadyShown = true;
+                }
+            }
         })
-        let url = `${BASE_URL}plane?latitude=${userLat.toString()}&longitude=${userLng.toString()}&range=${observationRange}&heading=-1`;
-        getPlanes(url);
     }, [observationRange]);
 
-    const getPlanes = (url) => {
-        axios.get(url).then(res => {
-            if(res.data.data){
-                setPlanes(res.data.data);
-                let timeoutid = setTimeout(() => runGetPlanes(), 2000);
-                timeoutIDS.push(timeoutid);
-            }
-        }).catch(err => {
-            ToastAndroid.show('No planes in given range!', ToastAndroid.LONG);
-            setPlanes([])
-        })
-    }
- 
     const onRegionChangeHandler = (region) => {
         setMapLat(region.latitude)
         setMapLng(region.longitude)
@@ -99,7 +93,7 @@ const MapScreen = props => {
 
                 {userLat && userLng ?
                     <View style={styles.container}>
-                    <View style={styles.rangeStyles}><Text style={styles.rangeTextStyles}>{observationRange + "KM"}</Text></View>
+                        <View style={styles.rangeStyles}><Text style={styles.rangeTextStyles}>{observationRange + "KM"}</Text></View>
                         <MapView
                             onRegionChange={(reg) => onRegionChangeHandler(reg)}
                             showsCompass
@@ -195,7 +189,7 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.primary,
         padding: 3,
         borderTopLeftRadius: 6
-       
+
     },
     rangeTextStyles: {
         fontSize: 24,
@@ -225,21 +219,17 @@ MapScreen.navigationOptions = navData => {
         }
     }
     return {
-<<<<<<< HEAD
         headerTitle: 'Map',
         headerLeft: <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
-        <Item
-            title="AR"
-            iconName='md-camera'
-            onPress={() => {
-                navData.navigation.navigate("AR");
-            }}
-        />
+            <Item
+                title="AR"
+                iconName='md-camera'
+                onPress={() => {
+                    navData.navigation.navigate("AR");
+                }}
+            />
 
-    </HeaderButtons>,
-=======
-        headerTitle: "Map",
->>>>>>> feature/range-slider
+        </HeaderButtons>,
         headerRight: <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
             <Item
                 title="Save to file"
