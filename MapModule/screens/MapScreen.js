@@ -45,30 +45,30 @@ const MapScreen = props => {
         latitudeDelta: 2.8522,
         longitudeDelta: 2.7421
     });
-
     useEffect(() => {
         socket = io();
         planeSocket = io(BASE_URL);
-        planeSocket.on('connect', () => { 
-            console.log('connected to socket server'); 
-          }); 
-        planeSocket.emit('clearInterval');
-        planeSocket.on('intervalCleaned', () => {
-            planeSocket.emit('getPlanesInRange', userLat, userLng, observationRange, deviceHeading);
+        planeSocket.on('connect', () => {
+            console.log('connected to socket server');
         });
         let toastAlreadyShown = false;
         planeSocket.on('fetchedPlanesInRange', (planes) => {
+            console.log("New data recived")
             if (planes && planes.data) {
                 setPlanes(planes.data);
             } else {
                 setPlanes([]);
-                if (!toastAlreadyShown){
+                if (!toastAlreadyShown) {
                     ToastAndroid.show('No planes in given range!', ToastAndroid.LONG);
                     toastAlreadyShown = true;
                 }
             }
         })
-    }, [observationRange]);
+
+        return () => {
+            planeSocket.disconnect();
+        }
+    }, [])
 
     const onRegionChangeHandler = (region) => {
         setMapLat(region.latitude)
@@ -81,9 +81,10 @@ const MapScreen = props => {
         const state = store.getState();
         props.navigation.setParams({ observationHistory: state.planes.observationHistory });
     }
-    const sliderSlidingHandler = (value) => {
+    const sliderSlidingHandler = useCallback((value) => {
         setObservationRange(value);
-    }
+        planeSocket.emit('getPlanesInRange', userLat, userLng, value, deviceHeading);
+    }, [planeSocket]);
 
 
     return (

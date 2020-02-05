@@ -195,6 +195,7 @@ const transformPointToAR = (objectLat, objectLng, deviceLat, deviceLng, heading)
 
 
 exports.getAllPlanesInRangeSOCKET = async (userLatitude, userLongitude, range, userHeading = -1) => {
+    console.log(range)
     if (isNaN(range) || isNaN(userHeading)) {
         return { message: "Invalid range or heading format", data: null };
     }
