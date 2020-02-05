@@ -195,7 +195,6 @@ const transformPointToAR = (objectLat, objectLng, deviceLat, deviceLng, heading)
 
 
 exports.getAllPlanesInRangeSOCKET = async (userLatitude, userLongitude, range, userHeading = -1) => {
-    console.log(range)
     if (isNaN(range) || isNaN(userHeading)) {
         return { message: "Invalid range or heading format", data: null };
     }
@@ -239,7 +238,6 @@ exports.getAllPlanesInRangeSOCKET = async (userLatitude, userLongitude, range, u
         return { message: "Fetching planes successful!", data: planesInRangeOfUser };
     }
     catch (err) {
-        console.log(err);
         return { message: "Something went wrong!", data: null };
     }
 }

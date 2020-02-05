@@ -48,12 +48,6 @@ const getPlanes = async (userLat, userLng, range, heading) => {
   return data;
 }
 
-
-const clearTimeoutsArray = () =>{
-  timeoutIDs.forEach(id => {
-    clearInterval(id);
-  })
-}
 mongoose.connect(
   dbConfig.url, dbConfig.options
 ).then( result => {
@@ -65,7 +59,7 @@ mongoose.connect(
     const intervalIDs = [];
     let intervalID;
     socket.on('getPlanesInRange', async (userLat, userLng, range, heading) => {
-      if (intervalIDs.length > 0){
+      if(intervalIDs.length > 0){
         intervalIDs.forEach(id => {
           clearInterval(id);
         });
@@ -73,9 +67,9 @@ mongoose.connect(
       }
       intervalID = setInterval(async() => {
         const data = await getPlanes(userLat, userLng, range, heading);
-        intervalIDs.push(intervalID);
         socket.emit('fetchedPlanesInRange', data)
       }, 2000);
+      intervalIDs.push(intervalID);
     });
     socket.on('disconnect', function () {
       if (intervalIDs.length > 0){

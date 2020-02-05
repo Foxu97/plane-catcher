@@ -51,11 +51,12 @@ const MapScreen = props => {
         planeSocket.on('connect', () => {
             console.log('connected to socket server');
         });
+        planeSocket.emit('getPlanesInRange', userLat, userLng, observationRange, deviceHeading);
         let toastAlreadyShown = false;
         planeSocket.on('fetchedPlanesInRange', (planes) => {
-            console.log("New data recived")
             if (planes && planes.data) {
                 setPlanes(planes.data);
+                toastAlreadyShown = false;
             } else {
                 setPlanes([]);
                 if (!toastAlreadyShown) {
@@ -82,9 +83,11 @@ const MapScreen = props => {
         props.navigation.setParams({ observationHistory: state.planes.observationHistory });
     }
     const sliderSlidingHandler = useCallback((value) => {
-        setObservationRange(value);
         planeSocket.emit('getPlanesInRange', userLat, userLng, value, deviceHeading);
     }, [planeSocket]);
+    const updateObservationRangeHandler = (value) => {
+        setObservationRange(value);
+    }
 
 
     return (
@@ -94,7 +97,6 @@ const MapScreen = props => {
 
                 {userLat && userLng ?
                     <View style={styles.container}>
-                        <View style={styles.rangeStyles}><Text style={styles.rangeTextStyles}>{observationRange + "KM"}</Text></View>
                         <MapView
                             onRegionChange={(reg) => onRegionChangeHandler(reg)}
                             showsCompass
@@ -144,6 +146,7 @@ const MapScreen = props => {
                             })) : null}
 
                         </MapView>
+                            <View style={styles.sliderWrapper}>
                         <Slider
                             style={styles.sliderStyle}
                             minimumValue={5}
@@ -154,7 +157,10 @@ const MapScreen = props => {
                             maximumTrackTintColor={Colors.primary}
                             thumbTintColor={Colors.accent}
                             onSlidingComplete={sliderSlidingHandler}
+                            onValueChange={updateObservationRangeHandler}
                         />
+                        </View>
+                        <View style={styles.rangeStyles}><Text style={styles.rangeTextStyles}>{observationRange + "KM"}</Text></View>
                     </View> : <ActivityIndicator />}</View>
         ), [planes, observationRange])
 
@@ -173,28 +179,32 @@ const styles = StyleSheet.create({
         width: Dimensions.get('window').width,
         height: Dimensions.get('window').height
     },
+    sliderWrapper: {
+        width: 20,
+        height: 300,
+        display: 'flex',
+        marginLeft: 'auto',
+        zIndex: 10
+    },
     sliderStyle: {
-        position: "relative",
+        width: 300,
         zIndex: 10,
-        marginLeft: "65%",
-        marginBottom: 120,
-        width: 350,
-        height: 40,
+        flex: 1,
+        alignSelf: 'center',
         transform: [{ rotate: `-90deg` }]
     },
     rangeStyles: {
         zIndex: 100,
-        position: 'absolute',
-        right: 0,
-        bottom: 0,
         backgroundColor: Colors.primary,
         padding: 3,
-        borderTopLeftRadius: 6
-
+        borderTopLeftRadius: 6,
+        width: 90,
+        marginLeft: 'auto'
     },
     rangeTextStyles: {
         fontSize: 24,
-        color: "white"
+        color: "white",
+        textAlign:"center"
     }
 
 });
