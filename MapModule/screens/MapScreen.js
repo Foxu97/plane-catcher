@@ -1,18 +1,15 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { HeaderButtons, Item } from 'react-navigation-header-buttons';
 import MapView from 'react-native-maps';
-import { Marker, Callout } from 'react-native-maps';
-import { View, StyleSheet, Dimensions, ToastAndroid, Text, Image, Slider } from 'react-native';
+import { View, StyleSheet, Dimensions, ToastAndroid, Text, Slider } from 'react-native';
 import { useSelector, useDispatch, useStore } from 'react-redux';
 import { withNavigationFocus } from 'react-navigation';
 
 import Colors from '../constants/Colors';
-import manMarker from '../assets/standing-up-man.png';
-import planeMarker from '../assets/plane.png';
-import headingMarker from '../assets/up.png';
+import PlaneMarker from '../components/PlaneMarker';
+import UserMarker from '../components/UserMarker';
 import { ActivityIndicator } from 'react-native';
-//import * as API from '../api';
-import PlaneInfo from '../components/PlaneInfo';
+
 import CustomHeaderButton from '../components/CustomHeaderButton';
 import * as planesActions from '../store/planes/planes-actions';
 
@@ -107,43 +104,15 @@ const MapScreen = props => {
                                 latitudeDelta: latDelta,
                                 longitudeDelta: lngDelta
                             }} style={styles.mapStyle} >
-
-                            {/* {deviceHeading ? <MapView.Marker
-                                coordinate={setRegion(userLat, userLng)}
-                                image={headingMarker}
-                                rotation={parseInt(deviceHeading)}
-                            /> : null} */}
-
-                            <MapView.Marker
-                                coordinate={setRegion(userLat, userLng)}
-                                image={manMarker}
+                            <UserMarker 
+                                setRegion={setRegion}
+                                userLat={userLat}
+                                userLng={userLng}
                             />
                             {planes ? planes.map((plane => {
-                                return (<MapView.Marker
-                                    coordinate={setRegion(plane.latitude, plane.longitude)}
-                                    key={plane.icao24}
-                                    onPress={(e) => { e.stopPropagation(); onPlaneTapHandler(plane) }}
-                                >
-                                    <Image source={require("../assets/plane.png")} style={{ height: 36, width: 36, transform: [{ rotate: `${plane.trueTrack}deg` }] }} />
-                                    {plane.distanceToPlane ? <Text
-                                        style={{
-                                            color: 'white',
-                                            backgroundColor: Colors.primary,
-                                            zIndex: 9,
-                                            textAlign: "center",
-                                            padding: 1,
-                                            borderRadius: 2
-                                        }}
-                                    >{(plane.distanceToPlane / 1000).toFixed() + "km"}</Text> : null}
-                                    <Callout>
-                                        <PlaneInfo
-                                            icao24={plane.icao24}
-                                            callsign={plane.callsign}
-                                            velocity={plane.velocity ? (plane.velocity * 60 * 60 / 1000).toFixed() + "km/h" : "N/A"}
-                                            altitude={plane.altitude ? plane.altitude.toFixed() + "m" : "N/A"}
-                                        />
-                                    </Callout>
-                                </MapView.Marker>)
+                                return (
+                                    <PlaneMarker plane={plane} onPlaneTapHandler={onPlaneTapHandler} setRegion={setRegion}/>
+                                )
                             })) : null}
 
                         </MapView>
@@ -153,7 +122,7 @@ const MapScreen = props => {
                             minimumValue={5}
                             maximumValue={200}
                             step={5}
-                            value={80}
+                            value={observationRange}
                             minimumTrackTintColor={Colors.primary}
                             maximumTrackTintColor={Colors.primary}
                             thumbTintColor={Colors.accent}
