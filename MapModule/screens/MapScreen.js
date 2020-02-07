@@ -8,6 +8,7 @@ import { withNavigationFocus } from 'react-navigation';
 import Colors from '../constants/Colors';
 import PlaneMarker from '../components/PlaneMarker';
 import UserMarker from '../components/UserMarker';
+import Map from '../components/Map';
 import { ActivityIndicator } from 'react-native';
 
 import CustomHeaderButton from '../components/CustomHeaderButton';
@@ -20,15 +21,12 @@ import * as Permissions from 'expo-permissions';
 import io from 'socket.io-client'
 
 const MapScreen = props => {
+    console.log("Map screen rendered")
     const dispatch = useDispatch();
     const [planes, setPlanes] = useState();
-    const [latDelta, setLatDelta] = useState(2.8522);
-    const [lngDelta, setLngDelta] = useState(2.7421);
     const userLat = useSelector(state => state.planes.latitude);
     const userLng = useSelector(state => state.planes.longitude);
     const [observationRange, setObservationRange] = useState(80);
-    const [mapLat, setMapLat] = useState(userLat);
-    const [mapLng, setMapLng] = useState(userLng);
     const store = useStore();
     const [deviceHeading, setDeviceHeading] = useState(null);
     const BASE_URL = "http://192.168.74.254:8082/";
@@ -36,12 +34,6 @@ const MapScreen = props => {
     let planeSocket;
     //const BASE_URL = "http://plane-catcher-backend.herokuapp.com/"
 
-    const setRegion = (lat, lng) => ({
-        latitude: lat,
-        longitude: lng,
-        latitudeDelta: 2.8522,
-        longitudeDelta: 2.7421
-    });
     useEffect(() => {
         const socket = io();
         planeSocket = io(BASE_URL);
@@ -69,12 +61,6 @@ const MapScreen = props => {
         }
     }, [])
 
-    const onRegionChangeHandler = (region) => {
-        setMapLat(region.latitude)
-        setMapLng(region.longitude)
-        setLatDelta(region.latitudeDelta);
-        setLngDelta(region.longitudeDelta);
-    }
     const onPlaneTapHandler = (plane) => {
         dispatch(planesActions.addPlaneToHistory(plane));
         const state = store.getState();
@@ -95,27 +81,12 @@ const MapScreen = props => {
 
                 {userLat && userLng ?
                     <View style={styles.container}>
-                        <MapView
-                            onRegionChangeComplete={(reg) => onRegionChangeHandler(reg)}
-                            showsCompass
-                            region={{
-                                latitude: mapLat,
-                                longitude: mapLng,
-                                latitudeDelta: latDelta,
-                                longitudeDelta: lngDelta
-                            }} style={styles.mapStyle} >
-                            <UserMarker 
-                                setRegion={setRegion}
-                                userLat={userLat}
-                                userLng={userLng}
-                            />
-                            {planes ? planes.map((plane => {
-                                return (
-                                    <PlaneMarker plane={plane} onPlaneTapHandler={onPlaneTapHandler} setRegion={setRegion}/>
-                                )
-                            })) : null}
-
-                        </MapView>
+                        <Map
+                            userLat={userLat}
+                            userLng={userLng}
+                            planes={planes}
+                            onPlaneTapHandler={onPlaneTapHandler}
+                        />
                             <View style={styles.sliderWrapper}>
                         <Slider
                             style={styles.sliderStyle}
@@ -131,7 +102,8 @@ const MapScreen = props => {
                         />
                         </View>
                         <View style={styles.rangeStyles}><Text style={styles.rangeTextStyles}>{observationRange + "KM"}</Text></View>
-                    </View> : <ActivityIndicator />}</View>
+                    </View> : <ActivityIndicator />}
+                    </View>
         ), [planes, observationRange])
 
     );
@@ -142,12 +114,6 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#fff',
         justifyContent: 'flex-end'
-    },
-    mapStyle: {
-        position: 'absolute',
-        flex: 1,
-        width: Dimensions.get('window').width,
-        height: Dimensions.get('window').height
     },
     sliderWrapper: {
         width: 20,

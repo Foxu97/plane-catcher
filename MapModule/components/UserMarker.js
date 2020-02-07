@@ -3,8 +3,6 @@ import {}from 'react-native';
 import * as Location from 'expo-location';
 import {Marker} from 'react-native-maps'
 
-import headingMarker from '../assets/blue-dot-heading.png';
-
 const UserMarker = props => {
     const [deviceHeading, setDeviceHeading] = useState(0);
     const prevDeviceHeading = useRef();
@@ -24,11 +22,11 @@ const UserMarker = props => {
     }, [])
 
     return (
-        deviceHeading ? <Marker
+        <Marker
             coordinate={props.setRegion(props.userLat, props.userLng)}
-            image={headingMarker}
+            image={deviceHeading ? require('../assets/blue-dot-heading.png') : require('../assets/blue-dot.png')}
             rotation={parseInt(deviceHeading)}
-        /> : null
+        />
     );
 }
 

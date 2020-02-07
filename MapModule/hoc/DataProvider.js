@@ -23,10 +23,11 @@ const DataProvider = props => {
                     setHasLocation(false);
                     ToastAndroid.show('Cant run app without permissions granted :(', ToastAndroid.LONG);
                 } else {
+                    console.log("Permissions granted")
                     const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
-                    const headingRes = await Location.getHeadingAsync();
+                    //const headingRes = await Location.getHeadingAsync(); not work on emulator
                     dispatch(planeActions.setLocation(location.coords.latitude, location.coords.longitude));
-                    dispatch(planeActions.setHeading(headingRes.trueHeading));
+                    //dispatch(planeActions.setHeading(headingRes.trueHeading));
                     setHasLocation(true);
                     setHasPermissions(true);
                 }
