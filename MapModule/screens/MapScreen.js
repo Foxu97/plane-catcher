@@ -36,7 +36,7 @@ const MapScreen = props => {
     const [deviceHeading, setDeviceHeading] = useState(null);
     const BASE_URL = "http://192.168.74.254:8082/";
 
-    let socket, planeSocket
+    let planeSocket;
     //const BASE_URL = "http://plane-catcher-backend.herokuapp.com/"
 
     const setRegion = (lat, lng) => ({
@@ -46,18 +46,19 @@ const MapScreen = props => {
         longitudeDelta: 2.7421
     });
     useEffect(() => {
-        socket = io();
+        const socket = io();
         planeSocket = io(BASE_URL);
-        planeSocket.on('connect', () => {
-            console.log('connected to socket server');
-        });
         planeSocket.emit('getPlanesInRange', userLat, userLng, observationRange, deviceHeading);
         let toastAlreadyShown = false;
         planeSocket.on('fetchedPlanesInRange', (planes) => {
-            if (planes && planes.data) {
+            if (planes.data) {
                 setPlanes(planes.data);
                 toastAlreadyShown = false;
-            } else {
+            } 
+            else if (planes.error.code === 504){ // timeout error
+                return;
+            }
+            else if (planes.error.code === 404) { // no planes fetched error
                 setPlanes([]);
                 if (!toastAlreadyShown) {
                     ToastAndroid.show('No planes in given range!', ToastAndroid.LONG);
@@ -98,7 +99,7 @@ const MapScreen = props => {
                 {userLat && userLng ?
                     <View style={styles.container}>
                         <MapView
-                            onRegionChange={(reg) => onRegionChangeHandler(reg)}
+                            onRegionChangeComplete={(reg) => onRegionChangeHandler(reg)}
                             showsCompass
                             region={{
                                 latitude: mapLat,

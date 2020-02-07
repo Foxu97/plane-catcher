@@ -3,21 +3,26 @@ const app = express();
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const router = express.Router()
+const compression = require('compression');
+const helmet = require('helmet')
 const dotenv = require('dotenv').config();
 const dbConfig = require('./config/dbConfig');
 const PORT = process.env.PORT || 8082;
+
 
 const planeRoutes = require('./routes/plane');
 const userRoutes = require('./routes/user');
 const debugRoutes = require('./routes/debug');
 
+app.use(compression());
+app.use(helmet());
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE');
+    res.setHeader('Access-Control-Allow-Methods', 'GET');
     res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
     if (req.method === "OPTIONS") {
         return res.sendStatus(200);
@@ -68,7 +73,7 @@ mongoose.connect(
       intervalID = setInterval(async() => {
         const data = await getPlanes(userLat, userLng, range, heading);
         socket.emit('fetchedPlanesInRange', data)
-      }, 2000);
+      }, 2500);
       intervalIDs.push(intervalID);
     });
     socket.on('disconnect', function () {

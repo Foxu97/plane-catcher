@@ -1,6 +1,7 @@
 const API = require('../models/API');
+const { AbortController, abortableFetch } = require('abortcontroller-polyfill/dist/cjs-ponyfill');
+const { fetch } = abortableFetch(require('node-fetch'));
 
-const fetch = require('node-fetch');
 
 const getDistance = (p1, p2) => {
     const R = 6378137; // Earth’s mean radius in meter
@@ -130,11 +131,22 @@ const getBoundingBoxCoveringUserPosition = (userCoords, rangeInKm) => {
 }
 
 const fetchPlanesInBoundingBox = async (minBoxPoint, maxBoxPoint) => {
-    return fetch(API.OpenSkyURL + `states/all?lamin=${minBoxPoint.latitude}&lomin=${minBoxPoint.longitude}&lamax=${maxBoxPoint.latitude}&lomax=${maxBoxPoint.longitude}`).then(
-        res => {
-            return res.json();
+    const controller = new AbortController();
+    const timeout = setTimeout(
+        () => { controller.abort(); },
+        2500,
+      );
+    return fetch(API.OpenSkyURL + `states/all?lamin=${minBoxPoint.latitude}&lomin=${minBoxPoint.longitude}&lamax=${maxBoxPoint.latitude}&lomax=${maxBoxPoint.longitude}`, {signal: controller.signal})
+    .then(res => res.json())
+    .then(data =>  data)
+    .catch(err => {
+        if(err.name === "AbortError") {
+            return
         }
-    );
+    })
+    .finally(() => {
+        clearTimeout(timeout);
+    })
 }
 const getPlaneInfo = async (icao24) => {
     return fetch(API.AviationEdgeURL + `flights?key=${process.env.AVIATION_EDGE_APIKEY}&aircraftIcao24=${icao24}`).then(
@@ -205,10 +217,11 @@ exports.getAllPlanesInRangeSOCKET = async (userLatitude, userLongitude, range, u
     const c = Math.sqrt(Math.pow(range, 2) + Math.pow(range, 2));
     const userAreaBoundingBox = getBoundingBoxCoveringUserPosition({ latitude: userLatitude, longitude: userLongitude }, c);
     try {
+
         let allPlanes;
         allPlanes = await fetchPlanesInBoundingBox(userAreaBoundingBox.minBoxPoint, userAreaBoundingBox.maxBoxPoint);
-        if (!allPlanes.states) {
-            return { message: "No planes in given range!", data: null };
+        if (allPlanes.states === null) {
+            return { message: "No planes in given range!", data: null, error: {message: "No planes in given range", code: 404} };
         }
         const mappedPlanes = mapPlanesInfo(allPlanes.states);
         const planesInRangeOfUser = mappedPlanes.filter(plane => {
@@ -219,7 +232,7 @@ exports.getAllPlanesInRangeSOCKET = async (userLatitude, userLongitude, range, u
         });
 
         if (planesInRangeOfUser.length === 0) {
-            return { message: "No planes in given range!", data: null };
+            return { message: "No planes in given range!", data: null, error: {message: "No planes in given range", code: 404} };
         }
         if (!(userHeading < 0)) {
             planesInRangeOfUser.forEach((plane => {
@@ -235,9 +248,9 @@ exports.getAllPlanesInRangeSOCKET = async (userLatitude, userLongitude, range, u
                 }
             }));
         }
-        return { message: "Fetching planes successful!", data: planesInRangeOfUser };
+        return { message: "Fetching planes successful!", data: planesInRangeOfUser, error: null };
     }
     catch (err) {
-        return { message: "Something went wrong!", data: null };
+        return { message: "Something went wrong!", data: null, error: {message: "Timeout", code: 504} };
     }
 }

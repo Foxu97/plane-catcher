@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, StyleSheet} from 'react-native';
+import {View, StyleSheet, Platform} from 'react-native';
 
 const SafeAndroidView = props => {
     return (
@@ -11,7 +11,7 @@ const SafeAndroidView = props => {
 
 const styles = StyleSheet.create({
     safeAndroidView: {
-        paddingTop: 28
+        paddingTop: Platform.OS === 'android' ? 25: 0
     }
 });
 export default SafeAndroidView;
