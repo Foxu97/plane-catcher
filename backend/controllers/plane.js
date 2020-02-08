@@ -134,7 +134,7 @@ const fetchPlanesInBoundingBox = async (minBoxPoint, maxBoxPoint) => {
     const controller = new AbortController();
     const timeout = setTimeout(
         () => { controller.abort(); },
-        2500,
+        5000,
       );
     return fetch(API.OpenSkyURL + `states/all?lamin=${minBoxPoint.latitude}&lomin=${minBoxPoint.longitude}&lamax=${maxBoxPoint.latitude}&lomax=${maxBoxPoint.longitude}`, {signal: controller.signal})
     .then(res => res.json())
@@ -207,6 +207,7 @@ const transformPointToAR = (objectLat, objectLng, deviceLat, deviceLng, heading)
 
 
 exports.getAllPlanesInRangeSOCKET = async (userLatitude, userLongitude, range, userHeading = -1) => {
+    console.log(range)
     if (isNaN(range) || isNaN(userHeading)) {
         return { message: "Invalid range or heading format", data: null };
     }
@@ -221,7 +222,7 @@ exports.getAllPlanesInRangeSOCKET = async (userLatitude, userLongitude, range, u
         let allPlanes;
         allPlanes = await fetchPlanesInBoundingBox(userAreaBoundingBox.minBoxPoint, userAreaBoundingBox.maxBoxPoint);
         if (allPlanes.states === null) {
-            return { message: "No planes in given range!", data: null, error: {message: "No planes in given range", code: 404} };
+            return { message: "No planes in given range!", data: [], error: {message: "No planes in given range", code: 404} };
         }
         const mappedPlanes = mapPlanesInfo(allPlanes.states);
         const planesInRangeOfUser = mappedPlanes.filter(plane => {
@@ -232,7 +233,7 @@ exports.getAllPlanesInRangeSOCKET = async (userLatitude, userLongitude, range, u
         });
 
         if (planesInRangeOfUser.length === 0) {
-            return { message: "No planes in given range!", data: null, error: {message: "No planes in given range", code: 404} };
+            return { message: "No planes in given range!", data: [], error: {message: "No planes in given range", code: 404} };
         }
         if (!(userHeading < 0)) {
             planesInRangeOfUser.forEach((plane => {

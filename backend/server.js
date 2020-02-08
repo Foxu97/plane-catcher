@@ -61,6 +61,7 @@ mongoose.connect(
   });
   const io = require('./socket').init(server);
   io.on('connection', socket => {
+    console.log("userConnected")
     const intervalIDs = [];
     let intervalID;
     socket.on('getPlanesInRange', async (userLat, userLng, range, heading) => {
@@ -72,11 +73,20 @@ mongoose.connect(
       }
       intervalID = setInterval(async() => {
         const data = await getPlanes(userLat, userLng, range, heading);
-        socket.emit('fetchedPlanesInRange', data)
-      }, 2500);
+        if (data.data){
+          socket.emit('fetchedPlanesInRange', data)
+        }
+      }, 5000);
+      if(intervalIDs.length > 0){
+        intervalIDs.forEach(id => {
+          clearInterval(id);
+        });
+        intervalIDs.splice(0, intervalIDs.length);
+      }
       intervalIDs.push(intervalID);
     });
     socket.on('disconnect', function () {
+      console.log("User disconnected")
       if (intervalIDs.length > 0){
         intervalIDs.forEach(id => {
           clearInterval(id);

@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Button, Text, StyleSheet, Image, ImageBackground } from 'react-native';
 import SafeAndroidView from '../hoc/SafeAndroidView';
-import Colors from '../constants/Colors';
 
 const AskPermissions = props => {
     return (
