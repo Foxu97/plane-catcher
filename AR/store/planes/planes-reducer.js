@@ -1,10 +1,11 @@
-import { SET_PLANES, SET_DEVICE_HEADING, SET_USER_LOCATION, ADD_PLANE_TO_HISTORY } from './planes-actions';
+import { SET_PLANES, SET_DEVICE_HEADING, SET_USER_LOCATION, ADD_PLANE_TO_HISTORY, SET_OBSERVATION_RANGE } from './planes-actions';
 
 const initialState = {
     planes: [],
     longitude: null,
     latitude: null,
     heading: null,
+    observationRange: 80,
     observationHistory: []
 }
 
@@ -44,6 +45,11 @@ export default (state = initialState, action) => {
             }
             return {
                 ...state
+            }
+        case SET_OBSERVATION_RANGE: 
+            return {
+                ...state,
+                observationRange: action.range
             }
 
     }

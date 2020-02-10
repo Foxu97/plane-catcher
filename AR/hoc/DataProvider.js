@@ -1,34 +1,35 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect} from 'react'
 import { View, StyleSheet, ToastAndroid } from 'react-native'
 
 import * as Permissions from 'expo-permissions';
 import * as Location from 'expo-location';
 import { useDispatch } from 'react-redux';
 import * as planeActions from '../store/planes/planes-actions';
-
-import * as API from '../api';
+import AskPermissions from '../components/AskPermissions';
 
 
 import { ActivityIndicator } from 'react-native-paper';
 
 const DataProvider = props => {
     const dispatch = useDispatch();
-    const [planesFetched, setPlanesFetched] = useState(false);
+    const [hasPermissions, setHasPermissions] = useState(false);
+    const [hasLocation, setHasLocation] = useState(false);
 
     const verifyPermissions = async () => {
             try {
                 const result = await Permissions.askAsync(Permissions.LOCATION, Permissions.CAMERA_ROLL, Permissions.CAMERA);
                 if (result.status !== 'granted') {
+                    setHasPermissions(false);
+                    setHasLocation(false);
                     ToastAndroid.show('Cant run app without permissions granted :(', ToastAndroid.LONG);
                 } else {
                     const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
-                    const headingRes = await Location.getHeadingAsync();
                     dispatch(planeActions.setLocation(location.coords.latitude, location.coords.longitude));
-                    dispatch(planeActions.setHeading(headingRes.trueHeading));
-                    setPlanesFetched(true);
+                    setHasLocation(true);
+                    setHasPermissions(true);
                 }
             } catch (err) {
-                console.log(err);
+                setHasPermissions(false);
             }
     }
 
@@ -37,11 +38,14 @@ const DataProvider = props => {
     }, [dispatch]);
 
     return (
-        planesFetched ? <View style={styles.view} >{props.children}</View> :
+        hasPermissions ? ( hasLocation ? <View style={styles.view} >{props.children}</View> : <ActivityIndicator style={styles.view}/>) :
             <View style={styles.view}>
-                <ActivityIndicator style={styles.view}/>
+                <AskPermissions
+                    verifyPermissionsHandler={verifyPermissions}
+                />
             </View>
     )
+
 }
 
 const styles = StyleSheet.create({

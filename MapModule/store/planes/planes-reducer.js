@@ -56,7 +56,5 @@ export default (state = initialState, action) => {
 
     return state;
 }
-export const getObservationRange = () => {
-    return initialState.observationRange;
-}
+
 

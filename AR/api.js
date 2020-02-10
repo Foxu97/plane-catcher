@@ -1,47 +1,45 @@
-import { BehaviorSubject } from 'rxjs'
-
-const BASE_URL = "http://plane-catcher-backend.herokuapp.com/"
-
+import { BehaviorSubject } from 'rxjs';
+const io = require('socket.io-client');
+//const BASE_URL = "http://plane-catcher-backend.herokuapp.com/"
+const BASE_URL = "ws://192.168.74.254:8082/"
 const planesSubject = new BehaviorSubject([]);
 const planesSubjectAR = new BehaviorSubject([]);
-let interval;
 
-export const getPlanes = async (userLatitude, userLongitude, range) => {
-        interval = setInterval(async () => {
-            try {
-                const response = await fetch(`${BASE_URL}plane?latitude=${userLatitude.toString()}&longitude=${userLongitude.toString()}&range=${range}&heading=-1`);
-                const resData = await response.json();
-                planesSubject.next(resData.data);
 
-            } catch (err) {
-                console.log(err)
-            }
-        }, 2500);
+const planeSocket = io(BASE_URL);
+planeSocket.on('fetchedPlanesInRange', (planes) => {
+    planesSubject.next(planes.data);
+})
+
+
+
+export const getPlanes = (userLat, userLng, range, heading = -1) => {
+    planeSocket.emit('getPlanesInRange', userLat, userLng, range, heading)
 }
 
-export const stopWatchingPlanes = () => {
-    clearInterval(interval);
+export const disconnectPlaneScoket = () => {
+    planeSocket.disconnect();
 }
+
 
 export const getPlaneSubject = () => {
     return planesSubject.asObservable();
 }
 
-/////////////////////
-
 let intervalAR
 
 export const getPlanesAR = async (userLatitude, userLongitude, range, heading) => {
-        intervalAR = setInterval(async () => {
-            try {
-                const response = await fetch(`${BASE_URL}plane?latitude=${userLatitude.toString()}&longitude=${userLongitude.toString()}&range=${range}&heading=${heading}`);
-                const resData = await response.json();
-                planesSubjectAR.next(resData.data);
+    intervalAR = setInterval(async () => {
+        try {
+            const response = await fetch(`${BASE_URL}plane?latitude=${userLatitude.toString()}&longitude=${userLongitude.toString()}&range=${range}&heading=${heading}`);
+            const resData = await response.json();
+            planesSubjectAR.next(resData.data);
 
-            } catch (err) {
-                console.log(err)
-            }
-        }, 2500);
+        } catch (err) {
+            //console.log(err)
+            throw err
+        }
+    }, 5000);
 }
 
 export const stopWatchingPlanesAR = () => {

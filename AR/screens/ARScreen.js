@@ -46,11 +46,9 @@ const ARScreen = props => {
 
 
 
-ARScreen.navigationOptions = navData => {
-  return {
-      headerTitle: 'AR'
-  }
+ARScreen.navigationOptions = {
+  header: null
 }
 
 
-export default  withNavigationFocus(ARScreen);
+export default withNavigationFocus(ARScreen);

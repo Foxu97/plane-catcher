@@ -3,11 +3,11 @@ import { createStore, combineReducers, applyMiddleware } from 'redux';
 import AppNavigation from './navigation/AppNavigation';
 import DataProvider from './hoc/DataProvider';
 import { Provider } from 'react-redux';
-import { useScreens } from 'react-native-screens';
+import { enableScreens } from 'react-native-screens';
 import ReduxThunk from 'redux-thunk';
 import planeReducer from './store/planes/planes-reducer';
 
-useScreens();
+enableScreens();
 
 const rootReducer = combineReducers({
   planes: planeReducer

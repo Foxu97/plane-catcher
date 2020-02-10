@@ -1,6 +1,5 @@
 import { BehaviorSubject } from 'rxjs';
 const io = require('socket.io-client');
-const socket = io();
 //const BASE_URL = "http://plane-catcher-backend.herokuapp.com/"
 const BASE_URL = "ws://192.168.74.254:8082/"
 const planesSubject = new BehaviorSubject([]);
@@ -15,7 +14,6 @@ planeSocket.on('fetchedPlanesInRange', (planes) => {
 
 
 export const getPlanes = (userLat, userLng, range, heading = -1) => {
-    // console.log("Getting planes function")
     planeSocket.emit('getPlanesInRange', userLat, userLng, range, heading)
 }
 
