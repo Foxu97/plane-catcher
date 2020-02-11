@@ -4,7 +4,4 @@ Software engineering project.
 
 35. Złap samolot Augmented reality: aplikacja mobilna – na podstawie odczytu kompasu, akcelerometru i GPS śledząca przelatujące samoloty i pobierająca dane o numerze i relacji lotu wow!: historia obserwacji z możliwością eksportu w formacie tekstowym
 
-## Development server
-Run `npm install` for install all dependencies.
-Go to backend folder and run `npm start` for a dev api server. Navigate to `http://localhost:8080/docs` to read API documentation.
 
