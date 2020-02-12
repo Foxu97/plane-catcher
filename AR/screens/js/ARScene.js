@@ -14,7 +14,7 @@ import * as Location from 'expo-location';
 import * as Permissions from 'expo-permissions';
 import * as API from '../../api';
 
-export default class HelloWorldSceneAR extends Component {
+export default class ARScene extends Component {
 
   constructor() {
     super();
@@ -122,20 +122,18 @@ export default class HelloWorldSceneAR extends Component {
 
   async _onInitialized() {
     const heading = await this._getHeadingAsync()
-    API.getPlanesAR(this.props.arSceneNavigator.viroAppProps.latitude, this.props.arSceneNavigator.viroAppProps.longitude, 130, heading);
-    const planesSubscription = API.getPlaneSubjectAR();
-    planesSubscription.subscribe(value => {
-        if(value.length) {
-          this.setState({
-            planes: value
-          });
-        }
-    });  
+    API.getPlanes(this.props.arSceneNavigator.viroAppProps.latitude, this.props.arSceneNavigator.viroAppProps.longitude, 80, heading);
+    const planeSubject = API.getPlaneSubject();
+    planeSubject.subscribe(planes => {
+      this.setState({
+        planes: planes
+      });
+    }) 
   }
 
 }
 
-var styles = StyleSheet.create({
+const styles = StyleSheet.create({
   helloWorldTextStyle: {
     fontFamily: 'Arial',
     fontSize: 30,
@@ -160,4 +158,4 @@ var styles = StyleSheet.create({
 
 
 
-module.exports = HelloWorldSceneAR;
+module.exports = ARScene;

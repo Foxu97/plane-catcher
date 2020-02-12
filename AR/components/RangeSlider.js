@@ -3,7 +3,6 @@ import { StyleSheet, View, Text, Slider } from 'react-native';
 import Colors from '../constants/Colors';
 
 const RangeSlider = props => {
-    console.log("Range slider rendered")
     return (
         <View>
             <View style={styles.sliderWrapper}>

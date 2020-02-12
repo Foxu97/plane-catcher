@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import { withNavigationFocus } from 'react-navigation';
 import { useSelector } from 'react-redux';
 import {
@@ -7,9 +7,11 @@ import {
   ViroARSceneNavigator,
 } from 'react-viro';
 
+import * as API from '../api';
 
 
-const InitialARScene = require('./js/HelloWorldSceneAR');
+
+const InitialARScene = require('./js/ARScene');
 const MAP = "MAP";
 const AR = "AR";
 
@@ -23,6 +25,10 @@ const ARScreen = props => {
     longitude: userLongitude
   }
 
+  useEffect(() => {
+    API.connectToSocket();
+  }, []);
+
 
   const _exitViro = () => {
     setNavigationType("MAP")
@@ -31,7 +37,7 @@ const ARScreen = props => {
     props.navigation.navigate("Map");
   }
 
-  const _getARNavigator = (lat, lng) => {
+  const _getARNavigator = () => {
     return (
       <ViroARSceneNavigator
         initialScene={{ scene: InitialARScene }} onExitViro={_exitViro} viroAppProps={userCoords}
@@ -40,11 +46,9 @@ const ARScreen = props => {
   }
 
   return (
-    navigationType === AR ? _getARNavigator(userLatitude, userLongitude) : _returnToMapScreen()
+    navigationType === AR ? _getARNavigator() : _returnToMapScreen()
   );
 }
-
-
 
 ARScreen.navigationOptions = {
   header: null
