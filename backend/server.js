@@ -65,6 +65,7 @@ mongoose.connect(
     const intervalIDs = [];
     let intervalID;
     socket.on('getPlanesInRange', async (userLat, userLng, range, heading) => {
+      console.log(heading)
       if(intervalIDs.length > 0){
         intervalIDs.forEach(id => {
           clearInterval(id);

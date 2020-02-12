@@ -5,8 +5,8 @@ import PlaneMarker from './PlaneMarker';
 import MapView from 'react-native-maps';
 import RangeSlider from './RangeSlider';
 import * as API from '../api';
+
 const Map = props => {
-    console.log("Map component rendered")
     const [observationRange, setObservationRange] = useState(80);
     const [latDelta, setLatDelta] = useState(2.8522);
     const [lngDelta, setLngDelta] = useState(2.7421);
@@ -15,6 +15,7 @@ const Map = props => {
     const [planes, setPlanes] = useState();
 
     useEffect(() => {
+        API.connectToSocket();
         const planeSubject = API.getPlaneSubject();
         API.getPlanes(props.userLat, props.userLng, observationRange);
         let toastAlreadyShown;

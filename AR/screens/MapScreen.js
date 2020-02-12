@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { HeaderButtons, Item } from 'react-navigation-header-buttons';
 import { ToastAndroid } from 'react-native';
 import { useSelector, useDispatch, useStore } from 'react-redux';
@@ -7,15 +7,15 @@ import { ActivityIndicator } from 'react-native';
 import Map from '../components/Map';
 import CustomHeaderButton from '../components/CustomHeaderButton';
 
+import * as API from '../api';
+
+
 import * as planesActions from '../store/planes/planes-actions';
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
 import * as Permissions from 'expo-permissions';
 
-
-
 const MapScreen = props => {
-    console.log("Map screen rendered")
     const dispatch = useDispatch();
     const userLat = useSelector(state => state.planes.latitude);
     const userLng = useSelector(state => state.planes.longitude);
@@ -65,6 +65,7 @@ MapScreen.navigationOptions = navData => {
                 title="AR"
                 iconName='md-camera'
                 onPress={() => {
+                    API.disconnectPlaneScoket();
                     navData.navigation.navigate("AR");
                 }}
             />
